@@ -39,6 +39,7 @@ func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
 		gender = db.Female
 	}
 	return db.UserInfo{
+		ID:          newInfo.ID,
 		Username:    newInfo.Username,
 		FirstName:   newInfo.FirstName,
 		LastName:    newInfo.LastName,
@@ -47,3 +48,16 @@ func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
 		CreatedTime: newInfo.CreatedTime,
 	}
 }
+
+func ConvertdbUserInfo(newInfo db.UserInfo) UserInfo {
+	return UserInfo{
+		ID:          newInfo.ID,
+		Username:    newInfo.Username,
+		FirstName:   newInfo.FirstName,
+		LastName:    newInfo.LastName,
+		Gender:      int(newInfo.Gender),
+		DateOfBirth: newInfo.DateOfBirth,
+		CreatedTime: newInfo.CreatedTime,
+	}
+}
+

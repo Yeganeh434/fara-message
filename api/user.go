@@ -74,14 +74,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		} else {
-			var userInfo UserInfo
-
-			userInfo.Username = user.Username
-			userInfo.FirstName = user.FirstName
-			userInfo.LastName = user.LastName
-			userInfo.Gender = int(user.Gender)
-			userInfo.DateOfBirth = user.DateOfBirth
-			userInfo.CreatedTime = user.CreatedTime
+			userInfo:=ConvertdbUserInfo(user)
 			convertUserToJSON, err := json.Marshal(userInfo)
 			if err != nil {
 				log.Printf("error marshaling:%v", err)
