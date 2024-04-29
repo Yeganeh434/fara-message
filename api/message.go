@@ -14,7 +14,7 @@ import (
 	"github.com/mhghw/fara-message/db"
 )
 
-func getUserIDFromToken(tokenString string) (string, error) {
+func GetUserIDFromToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil
 	})
@@ -36,6 +36,19 @@ func getUserIDFromToken(tokenString string) (string, error) {
 	return userID, nil
 }
 
+func GetUserID(authorizationHeader string) (string,error){
+	parts := strings.Split(authorizationHeader, " ")
+	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+		return "",errors.New("Unauthorized")
+	}
+	accessToken := parts[1]
+	userID, err := GetUserIDFromToken(accessToken)
+	if err != nil {
+		return "",err
+	}
+	return userID,nil
+}
+
 type Message struct {
 	ID       int    `json:"id"`
 	SenderID int    `json:"senderID"`
@@ -45,7 +58,7 @@ type Message struct {
 
 func DeleteMessageHandler(c *gin.Context) {
 	var message Message
-	if err := c.BindJSON(&message.ID); err != nil {
+	if err := c.BindJSON(&message); err != nil {
 		log.Printf("error binding JSON:%v", err)
 	}
 	err := db.Mysql.DeleteMessage(message.ID)
@@ -66,32 +79,21 @@ func SendMessageHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-
-	authorizationHeader := c.GetHeader("Authorization")
-	if authorizationHeader == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unauthorized",
-		})
-		return
-	}
-	parts := strings.Split(authorizationHeader, " ")
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unauthorized",
-		})
-		return
-	}
-	accessToken := parts[1]
-	userID, err := getUserIDFromToken(accessToken)
-	if err != nil {
-		log.Printf("error get ID:%v", err)
+	userID,err:=GetUserID(c.GetHeader("Authorization"))
+	if err!=nil {
+		log.Printf("error get user ID:%v",err)
 		c.Status(400)
 		return
 	}
 	ID, _ := strconv.Atoi(userID)
 	message.SenderID = ID
-
-	err = db.Mysql.SendMessage(message.ID, message.SenderID, message.ChatID, message.Content)
+	dbMessage:=db.Message{
+		ID:message.ID,
+		SenderID: message.SenderID,
+		ChatID:message.ChatID,
+		Content:message.Content,
+	}
+	err = db.Mysql.SendMessage(dbMessage)
 	if err != nil {
 		log.Printf("error:%v", err)
 		c.Status(400)

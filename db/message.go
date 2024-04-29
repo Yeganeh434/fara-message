@@ -10,12 +10,7 @@ func (d *Database) DeleteMessage(messageID int) error {
 	return nil
 }
 
-func (d *Database) SendMessage(messageID int, senderID int, chatID int, content string) error {
-	var message Message
-	message.ID = messageID
-	message.SenderID = senderID
-	message.ChatID = chatID
-	message.Content = content
+func (d *Database) SendMessage(message Message) error {
 	result := d.db.Create(&message)
 	if result.Error != nil {
 		return result.Error

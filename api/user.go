@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
@@ -63,16 +62,9 @@ func ReadUserHandler(c *gin.Context) {
 			c.JSON(http.StatusOK, convertUserToJSON)
 		}
 	} else {
-		authorizationHeader := c.GetHeader("Authorization")
-		parts := strings.Split(authorizationHeader, " ")
-		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
-			return
-		}
-		accessToken := parts[1]
-		userID, err := getUserIDFromToken(accessToken)
-		if err != nil {
-			log.Printf("error:%v", err)
+		userID,err:=GetUserID(c.GetHeader("Authorization"))
+		if err!=nil {
+			log.Printf("error get user ID:%v",err)
 			c.Status(400)
 			return
 		}
@@ -102,20 +94,9 @@ func ReadUserHandler(c *gin.Context) {
 }
 
 func UpdateUserHandler(c *gin.Context) {
-	authorizationHeader := c.GetHeader("Authorization")
-	if authorizationHeader == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
-		return
-	}
-	parts := strings.Split(authorizationHeader, " ")
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
-		return
-	}
-	accessToken := parts[1]
-	userID, err := getUserIDFromToken(accessToken)
-	if err != nil {
-		log.Printf("error:%v", err)
+	userID,err:=GetUserID(c.GetHeader("Authorization"))
+	if err!=nil {
+		log.Printf("error get user ID:%v",err)
 		c.Status(400)
 		return
 	}
@@ -126,19 +107,7 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	gender := db.Male
-	if newInfo.Gender != 0 {
-		gender = db.Female
-	}
-
-	dbUserInfo := db.UserInfo{
-		Username:    newInfo.Username,
-		FirstName:   newInfo.FirstName,
-		LastName:    newInfo.LastName,
-		Gender:      gender,
-		DateOfBirth: newInfo.DateOfBirth,
-		CreatedTime: newInfo.CreatedTime,
-	}
+	dbUserInfo:=ConvertUserInfo(newInfo)
 	err = db.Mysql.UpdateUser(userID, dbUserInfo)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
@@ -152,20 +121,9 @@ func UpdateUserHandler(c *gin.Context) {
 }
 
 func DeleteUserHandler(c *gin.Context) {
-	authorizationHeader := c.GetHeader("Authorization")
-	if authorizationHeader == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
-		return
-	}
-	parts := strings.Split(authorizationHeader, " ")
-	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})
-		return
-	}
-	accessToken := parts[1]
-	userID, err := getUserIDFromToken(accessToken)
-	if err != nil {
-		log.Printf("error:%v", err)
+	userID,err:=GetUserID(c.GetHeader("Authorization"))
+	if err!=nil {
+		log.Printf("error get user ID:%v",err)
 		c.Status(400)
 		return
 	}
