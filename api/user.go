@@ -36,8 +36,7 @@ type UsernameType struct {
 // }
 
 func ReadUserHandler(c *gin.Context) {
-	authorizationHeader := c.GetHeader("Authorization")
-	if authorizationHeader == "" {
+	if c.Request.ContentLength != 0 {
 		var username UsernameType
 		err := c.BindJSON(&username)
 		if err != nil {
@@ -64,6 +63,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.JSON(http.StatusOK, convertUserToJSON)
 		}
 	} else {
+		authorizationHeader := c.GetHeader("Authorization")
 		parts := strings.Split(authorizationHeader, " ")
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Unauthorized"})

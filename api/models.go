@@ -33,7 +33,7 @@ type UserInfo struct {
 	CreatedTime time.Time `json:"createdTime"`
 }
 
-func convertUserInfo(newInfo UserInfo) db.UserInfo {
+func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
 	gender := db.Male
 	if newInfo.Gender != 0 {
 		gender = db.Female
