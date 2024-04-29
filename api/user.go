@@ -43,7 +43,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		}
-		user, err := db.Mysql.ReadAnotherUser(username.Username)
+		user, err := db.Mysql.ReadUserByUsername(username.Username)
 		if err != nil {
 			log.Printf("error reading user:%v", err)
 			c.Status(400)

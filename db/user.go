@@ -8,7 +8,7 @@ func (d *Database) CreateUser(user User) error {
 	return nil
 }
 
-func (d *Database) ReadAnotherUser(username string) (User, error) {
+func (d *Database) ReadUserByUsername(username string) (User, error) {
 	var user User
 	result := d.db.First(&user, "username=?", username)
 	if result.Error != nil {
