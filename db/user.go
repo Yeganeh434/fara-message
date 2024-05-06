@@ -47,19 +47,28 @@ func (d *Database) DeleteUser(ID string) error {
 	return nil
 }
 
-func (d* Database) AddContact(userID int,contactID int) error{
-	contact:=Contacts{UserID:userID , ContactID:contactID}
-	result:=d.db.Create(&contact)
+func (d *Database) AddContact(userID int, contactID int) error {
+	contact := Contacts{UserID: userID, ContactID: contactID}
+	result := d.db.Create(&contact)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (d *Database) DeleteContact(userID int,contactID int) error{
-	result:=d.db.Where("UserID=? AND ContactID",userID,contactID).Delete(&Contacts{})
+func (d *Database) DeleteContact(userID int, contactID int) error {
+	result := d.db.Where("UserID=? AND ContactID", userID, contactID).Delete(&Contacts{})
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
+}
+
+func (d *Database) GetContact(userID int) ([]User,error) {
+	var contacts []User
+	result := d.db.Table("Contacts").Select("User.*").Joins("JOIN User ON Contacts.ContactID=User.ID").Where("Contacts.UserID=?",userID).Find(&contacts)
+	if result.Error != nil {
+		return nil,result.Error
+	}
+	return contacts,nil
 }

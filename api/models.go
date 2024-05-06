@@ -33,6 +33,21 @@ type UserInfo struct {
 	CreatedTime time.Time `json:"createdTime"`
 }
 
+type User struct {
+	ID          string    `json:"id"`
+	Username    string    `json:"username"`
+	FirstName   string    `json:"firstname"`
+	LastName    string    `json:"lastname"`
+	Password    string    `json:"password"`
+	Gender      int       `json:"gender"`
+	DateOfBirth time.Time `json:"dateOfBirth"`
+	CreatedTime time.Time `json:"createdTime"`
+}
+
+type ContactsResponse struct {
+	Contacts []AnotherUserInfo `json:"contacts"`
+}
+
 func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
 	gender := db.Male
 	if newInfo.Gender != 0 {
@@ -60,4 +75,3 @@ func ConvertdbUserInfo(newInfo db.UserInfo) UserInfo {
 		CreatedTime: newInfo.CreatedTime,
 	}
 }
-

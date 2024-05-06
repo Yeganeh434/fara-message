@@ -162,20 +162,20 @@ func AddContactHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	c.JSON(http.StatusOK,gin.H{
-		"message":"contact successfully added",
+	c.JSON(http.StatusOK, gin.H{
+		"message": "contact successfully added",
 	})
 }
 
-func DeleteContactHandler(c *gin.Context){
-	userID,err:=GetUserID(c.GetHeader("Authorization"))
-	if err!=nil {
-		log.Printf("error get user ID:%v",err)
+func DeleteContactHandler(c *gin.Context) {
+	userID, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
 		c.Status(400)
 		return
 	}
-	contactID:=c.Param("contactID")
-	if contactID==""{
+	contactID := c.Param("contactID")
+	if contactID == "" {
 		log.Printf("contact ID is empty")
 		c.Status(400)
 		return
@@ -192,13 +192,41 @@ func DeleteContactHandler(c *gin.Context){
 		c.Status(400)
 		return
 	}
-	err=db.Mysql.DeleteContact(intOfUserID,intOfContactID)
-	if err!=nil {
-		log.Printf("error deleting contact:%v",err)
+	err = db.Mysql.DeleteContact(intOfUserID, intOfContactID)
+	if err != nil {
+		log.Printf("error deleting contact:%v", err)
 		c.Status(400)
 		return
 	}
-	c.JSON(http.StatusOK,gin.H{
-		"message":"contact deleted successfully",
+	c.JSON(http.StatusOK, gin.H{
+		"message": "contact deleted successfully",
 	})
+}
+
+func GetContactHandler(c *gin.Context) {
+	userID, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
+		c.Status(400)
+		return
+	}
+	intOfUserID, err := strconv.Atoi(userID)
+	if err != nil {
+		log.Printf("error converting to int:%v", err)
+		c.Status(400)
+		return
+	}
+	var contacts ContactsResponse
+	dbContacts,err:= db.Mysql.GetContact(intOfUserID)
+	if err!=nil {
+		log.Printf("error get contacts:%v", err)
+		c.Status(400)
+		return
+	}
+	for i,value := range dbContacts {
+		contacts.Contacts[i].Username=value.Username
+		contacts.Contacts[i].FirstName=value.FirstName
+		contacts.Contacts[i].LastName=value.LastName
+	}
+	c.JSON(http.StatusOK,contacts)
 }
