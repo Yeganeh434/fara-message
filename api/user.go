@@ -166,3 +166,39 @@ func AddContactHandler(c *gin.Context) {
 		"message":"contact successfully added",
 	})
 }
+
+func DeleteContactHandler(c *gin.Context){
+	userID,err:=GetUserID(c.GetHeader("Authorization"))
+	if err!=nil {
+		log.Printf("error get user ID:%v",err)
+		c.Status(400)
+		return
+	}
+	contactID:=c.Param("contactID")
+	if contactID==""{
+		log.Printf("contact ID is empty")
+		c.Status(400)
+		return
+	}
+	intOfUserID, err := strconv.Atoi(userID)
+	if err != nil {
+		log.Printf("error converting to int:%v", err)
+		c.Status(400)
+		return
+	}
+	intOfContactID, err := strconv.Atoi(contactID)
+	if err != nil {
+		log.Printf("error converting to int:%v", err)
+		c.Status(400)
+		return
+	}
+	err=db.Mysql.DeleteContact(intOfUserID,intOfContactID)
+	if err!=nil {
+		log.Printf("error deleting contact:%v",err)
+		c.Status(400)
+		return
+	}
+	c.JSON(http.StatusOK,gin.H{
+		"message":"contact deleted successfully",
+	})
+}

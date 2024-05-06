@@ -55,3 +55,11 @@ func (d* Database) AddContact(userID int,contactID int) error{
 	}
 	return nil
 }
+
+func (d *Database) DeleteContact(userID int,contactID int) error{
+	result:=d.db.Where("UserID=? AND ContactID",userID,contactID).Delete(&Contacts{})
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
