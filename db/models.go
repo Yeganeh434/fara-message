@@ -39,6 +39,11 @@ type UserInfo struct {
 	CreatedTime time.Time `json:"createdTime"`
 }
 
+type Contacts struct {
+	UserID           string `gorm:"foreignkey:ID"`
+	ContantID        string `gorm:"foreignkey:ID"`
+}
+
 func ConvertUserToUserInfo(user User) UserInfo {
 	return UserInfo{
 		ID:          user.ID,
