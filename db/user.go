@@ -46,3 +46,12 @@ func (d *Database) DeleteUser(ID string) error {
 	}
 	return nil
 }
+
+func (d* Database) AddContact(userID int,contactID int) error{
+	contact:=Contacts{UserID:userID , ContactID:contactID}
+	result:=d.db.Create(&contact)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

@@ -19,7 +19,7 @@ const (
 )
 
 type User struct {
-	ID          string `gorm:"primary_key"`
+	ID          string `gorm:"primary_key"`    
 	Username    string
 	FirstName   string
 	LastName    string
@@ -40,8 +40,8 @@ type UserInfo struct {
 }
 
 type Contacts struct {
-	UserID           string `gorm:"foreignkey:ID"`
-	ContantID        string `gorm:"foreignkey:ID"`
+	UserID           int `gorm:"foreignkey:ID"`
+	ContactID        int `gorm:"foreignkey:ID"`
 }
 
 func ConvertUserToUserInfo(user User) UserInfo {

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
@@ -62,9 +63,9 @@ func ReadUserHandler(c *gin.Context) {
 			c.JSON(http.StatusOK, convertUserToJSON)
 		}
 	} else {
-		userID,err:=GetUserID(c.GetHeader("Authorization"))
-		if err!=nil {
-			log.Printf("error get user ID:%v",err)
+		userID, err := GetUserID(c.GetHeader("Authorization"))
+		if err != nil {
+			log.Printf("error get user ID:%v", err)
 			c.Status(400)
 			return
 		}
@@ -74,7 +75,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		} else {
-			userInfo:=ConvertdbUserInfo(user)
+			userInfo := ConvertdbUserInfo(user)
 			convertUserToJSON, err := json.Marshal(userInfo)
 			if err != nil {
 				log.Printf("error marshaling:%v", err)
@@ -87,9 +88,9 @@ func ReadUserHandler(c *gin.Context) {
 }
 
 func UpdateUserHandler(c *gin.Context) {
-	userID,err:=GetUserID(c.GetHeader("Authorization"))
-	if err!=nil {
-		log.Printf("error get user ID:%v",err)
+	userID, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
 		c.Status(400)
 		return
 	}
@@ -100,34 +101,68 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	dbUserInfo:=ConvertUserInfo(newInfo)
+	dbUserInfo := ConvertUserInfo(newInfo)
 	err = db.Mysql.UpdateUser(userID, dbUserInfo)
 	if err != nil {
 		log.Printf("error updating user:%v", err)
 		c.Status(400)
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "user updated successfully",
-		})
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "user updated successfully",
+	})
 }
 
 func DeleteUserHandler(c *gin.Context) {
-	userID,err:=GetUserID(c.GetHeader("Authorization"))
-	if err!=nil {
-		log.Printf("error get user ID:%v",err)
+	userID, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
 		c.Status(400)
 		return
 	}
 	err = db.Mysql.DeleteUser(userID)
 	if err != nil {
-		log.Printf("error:%v", err)
+		log.Printf("error deleting user:%v", err)
 		c.Status(400)
 		return
-	} else {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "user deleted successfully",
-		})
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "user deleted successfully",
+	})
+}
+
+func AddContactHandler(c *gin.Context) {
+	userID, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
+		c.Status(400)
+		return
+	}
+	contactID := c.Param("contactID")
+	if contactID == "" {
+		log.Printf("contact ID is empty")
+		c.Status(400)
+		return
+	}
+	intOfUserID, err := strconv.Atoi(userID)
+	if err != nil {
+		log.Printf("error converting to int:%v", err)
+		c.Status(400)
+		return
+	}
+	intOfContactID, err := strconv.Atoi(contactID)
+	if err != nil {
+		log.Printf("error converting to int:%v", err)
+		c.Status(400)
+		return
+	}
+	err = db.Mysql.AddContact(intOfUserID, intOfContactID)
+	if err != nil {
+		log.Printf("error add contact to database:%v", err)
+		c.Status(400)
+		return
+	}
+	c.JSON(http.StatusOK,gin.H{
+		"message":"contact successfully added",
+	})
 }

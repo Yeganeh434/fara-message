@@ -18,6 +18,7 @@ func RunWebServer(port int) error {
 	router.POST("/user/update", UpdateUserHandler)
 	router.POST("/user/delete", DeleteUserHandler)
 	router.POST("/user/edit", editUser)
+	router.POST("/user/contact/:contactID")
 	router.POST("/send/message", SendMessageHandler)
 	router.DELETE("/delete/message", DeleteMessageHandler)
 	router.POST("/new_direct_chat", NewDirectChatHandler)
