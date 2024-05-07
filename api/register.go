@@ -82,10 +82,6 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 		return db.User{}, fmt.Errorf("failed to parse date %w", err)
 	}
 
-	gender := db.Male
-	if form.Gender != 0 {
-		gender =db.Female
-	}
 	generatedID := generateID()
 	user := db.User{
 		ID:          generatedID,
@@ -93,7 +89,7 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 		FirstName:   form.FirstName,
 		LastName:    form.LastName,
 		Password:    form.Password,
-		Gender:      gender,
+		Gender:      form.Gender,
 		DateOfBirth: convertTime,
 		CreatedTime: time.Now(),
 	}

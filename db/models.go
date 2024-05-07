@@ -10,21 +10,14 @@ type Message struct {
 	ChatID   int `gorm:"foreign_key"`
 	Content  string
 }
-
-type Gender int8
-
-const (
-	Male Gender = iota
-	Female
-)
-
+// 0 equals male and 1 equals female
 type User struct {
 	ID          string `gorm:"primary_key"`    
 	Username    string
 	FirstName   string
 	LastName    string
 	Password    string
-	Gender      Gender
+	Gender      int
 	DateOfBirth time.Time
 	CreatedTime time.Time
 }
@@ -34,7 +27,7 @@ type UserInfo struct {
 	Username    string    `json:"username"`
 	FirstName   string    `json:"firstname"`
 	LastName    string    `json:"lastname"`
-	Gender      Gender    `json:"gender"`
+	Gender      int    `json:"gender"`
 	DateOfBirth time.Time `json:"dateOfBirth"`
 	CreatedTime time.Time `json:"createdTime"`
 }

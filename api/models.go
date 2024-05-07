@@ -49,16 +49,12 @@ type ContactsResponse struct {
 }
 
 func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
-	gender := db.Male
-	if newInfo.Gender != 0 {
-		gender = db.Female
-	}
 	return db.UserInfo{
 		ID:          newInfo.ID,
 		Username:    newInfo.Username,
 		FirstName:   newInfo.FirstName,
 		LastName:    newInfo.LastName,
-		Gender:      gender,
+		Gender:      newInfo.Gender,
 		DateOfBirth: newInfo.DateOfBirth,
 		CreatedTime: newInfo.CreatedTime,
 	}
@@ -70,7 +66,7 @@ func ConvertdbUserInfo(newInfo db.UserInfo) UserInfo {
 		Username:    newInfo.Username,
 		FirstName:   newInfo.FirstName,
 		LastName:    newInfo.LastName,
-		Gender:      int(newInfo.Gender),
+		Gender:      newInfo.Gender,
 		DateOfBirth: newInfo.DateOfBirth,
 		CreatedTime: newInfo.CreatedTime,
 	}
