@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +18,7 @@ type RegisterForm struct {
 	LastName        string `json:"last_name"`
 	Password        string `json:"password"`
 	ConfirmPassword string `json:"confirm_password"`
-	Gender          string `json:"gender"`
+	Gender          int    `json:"gender"`
 	DateOfBirth     string `json:"date_of_birth"`
 }
 
@@ -31,12 +30,12 @@ func RegisterHandler(c *gin.Context) {
 	var requestBody RegisterForm
 	err := c.BindJSON(&requestBody)
 	if err != nil {
-		log.Print("failed to bind json", err)
+		log.Printf("failed to bind json:%v", err)
 		return
 	}
 	err = validateUser(requestBody)
 	if err != nil {
-		log.Print("failed to validate user", err)
+		log.Printf("failed to validate user:%v", err)
 		return
 	}
 
@@ -75,25 +74,18 @@ func validateUser(form RegisterForm) error {
 
 	return nil
 }
-func assignGender(sex string) db.Gender {
-	var gender db.Gender
-	switch strings.ToLower(sex) {
-	case "male":
-		gender = db.Male
-	case "female":
-		gender = db.Female
-	}
-	return gender
 
-}
 func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
-	layout := "2006-01-02 15:04:05"
+	layout := "2006-01-02"
 	convertTime, err := time.Parse(layout, form.DateOfBirth)
 	if err != nil {
 		return db.User{}, fmt.Errorf("failed to parse date %w", err)
 	}
 
-	gender := assignGender(form.Gender)
+	gender := db.Male
+	if form.Gender != 0 {
+		gender =db.Female
+	}
 	generatedID := generateID()
 	user := db.User{
 		ID:          generatedID,
@@ -103,6 +95,7 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 		Password:    form.Password,
 		Gender:      gender,
 		DateOfBirth: convertTime,
+		CreatedTime: time.Now(),
 	}
 
 	return user, nil

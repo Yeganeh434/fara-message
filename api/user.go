@@ -140,7 +140,7 @@ func AddContactHandler(c *gin.Context) {
 	}
 	contactID := c.Param("contactID")
 	if contactID == "" {
-		log.Printf("contact ID is empty")
+		log.Print("contact ID is empty")
 		c.Status(400)
 		return
 	}
@@ -176,7 +176,7 @@ func DeleteContactHandler(c *gin.Context) {
 	}
 	contactID := c.Param("contactID")
 	if contactID == "" {
-		log.Printf("contact ID is empty")
+		log.Print("contact ID is empty")
 		c.Status(400)
 		return
 	}
