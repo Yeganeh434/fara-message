@@ -14,18 +14,18 @@ type Database struct {
 	db *gorm.DB
 }
 
-func NewDatabase() {
+func init() {
 	var err error
-	dsn := "root:831374@tcp(127.0.0.1:3306)/messenger?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:Yeganeh-2004@tcp(localhost:3306)/faramessage?charset=utf8mb4&parseTime=True&loc=Local"
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	Mysql.db=gormDB
 	if err != nil {
 		panic("failed to connect to database")
 	}
-	err = gormDB.AutoMigrate(&Chat{}, &ChatMember{}, &Message{})
+	err = Mysql.db.AutoMigrate(&Chat{}, &ChatMember{}, &Message{},&User{},&Contacts{})
 	if err != nil {
 		log.Printf("failed to migrate: %v", err)
 		return
 	}
 	fmt.Println("Migration done ..")
-	Mysql.db = gormDB
 }

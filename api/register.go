@@ -41,7 +41,7 @@ func RegisterHandler(c *gin.Context) {
 
 	user, err := convertRegisterFormToUser(requestBody)
 	if err != nil {
-		log.Print("failed to convert register form to user")
+		log.Printf("failed to convert register form to user:%v",err)
 		return
 	}
 
