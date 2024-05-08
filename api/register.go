@@ -1,7 +1,7 @@
 package api
 
 import (
-	"encoding/json"
+	// "encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -46,6 +46,7 @@ func RegisterHandler(c *gin.Context) {
 	}
 
 	token, err := CreateJWTToken(user.ID)
+	
 	if err != nil {
 		log.Print("failed to create token")
 		return
@@ -53,14 +54,9 @@ func RegisterHandler(c *gin.Context) {
 	userToken := tokenJSON{
 		Token: token,
 	}
-	userTokenJSON, err := json.Marshal(userToken)
-	if err != nil {
-		log.Print("failed to marshal token")
-		return
-	}
 
 	db.Mysql.CreateUser(user)
-	c.JSON(http.StatusOK, userTokenJSON)
+	c.JSON(http.StatusOK, userToken)
 }
 
 // other validation fields will be added...
