@@ -60,7 +60,7 @@ func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
 	}
 }
 
-func ConvertdbUserInfo(newInfo db.UserInfo) UserInfo {
+func ConvertdbUser(newInfo db.User) UserInfo {
 	return UserInfo{
 		ID:          newInfo.ID,
 		Username:    newInfo.Username,

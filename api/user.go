@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -37,6 +38,7 @@ type UsernameType struct {
 
 func ReadUserHandler(c *gin.Context) {
 	if c.Request.ContentLength != 0 {
+		fmt.Println("!!!!!!!!!!!!!!yseeeesssS!!!!!!!!!!!!!!!!!!!!")
 		var username UsernameType
 		err := c.BindJSON(&username)
 		if err != nil {
@@ -54,13 +56,7 @@ func ReadUserHandler(c *gin.Context) {
 			userInfo.Username = user.Username
 			userInfo.FirstName = user.FirstName
 			userInfo.LastName = user.LastName
-			convertUserToJSON, err := json.Marshal(userInfo)
-			if err != nil {
-				log.Printf("error marshaling:%v", err)
-				c.Status(400)
-				return
-			}
-			c.JSON(http.StatusOK, convertUserToJSON)
+			c.JSON(http.StatusOK, userInfo)
 		}
 	} else {
 		userID, err := GetUserID(c.GetHeader("Authorization"))
@@ -75,7 +71,7 @@ func ReadUserHandler(c *gin.Context) {
 			c.Status(400)
 			return
 		} else {
-			userInfo := ConvertdbUserInfo(user)
+			userInfo := ConvertdbUser(user)
 			convertUserToJSON, err := json.Marshal(userInfo)
 			if err != nil {
 				log.Printf("error marshaling:%v", err)
@@ -217,16 +213,16 @@ func GetContactHandler(c *gin.Context) {
 		return
 	}
 	var contacts ContactsResponse
-	dbContacts,err:= db.Mysql.GetContact(intOfUserID)
-	if err!=nil {
+	dbContacts, err := db.Mysql.GetContact(intOfUserID)
+	if err != nil {
 		log.Printf("error get contacts:%v", err)
 		c.Status(400)
 		return
 	}
-	for i,value := range dbContacts {
-		contacts.Contacts[i].Username=value.Username
-		contacts.Contacts[i].FirstName=value.FirstName
-		contacts.Contacts[i].LastName=value.LastName
+	for i, value := range dbContacts {
+		contacts.Contacts[i].Username = value.Username
+		contacts.Contacts[i].FirstName = value.FirstName
+		contacts.Contacts[i].LastName = value.LastName
 	}
-	c.JSON(http.StatusOK,contacts)
+	c.JSON(http.StatusOK, contacts)
 }

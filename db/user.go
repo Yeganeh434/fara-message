@@ -17,8 +17,8 @@ func (d *Database) ReadUserByUsername(username string) (User, error) {
 	return user, nil
 }
 
-func (d *Database) ReadUser(ID string) (UserInfo, error) {
-	var user UserInfo
+func (d *Database) ReadUser(ID string) (User, error) {
+	var user User
 	result := d.db.First(&user, "ID=?", ID)
 	if result.Error != nil {
 		return user, result.Error
