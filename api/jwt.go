@@ -3,9 +3,10 @@
 // import (
 // 	"errors"
 // 	"fmt"
+// 	"strings"
 // 	"time"
 
-// 	"github.com/dgrijalva/jwt-go"
+// 	"github.com/golang-jwt/jwt"
 // )
 
 // var secretKey = []byte("farawin")
@@ -29,6 +30,36 @@
 // }
 
 // func ValidateToken(tokenString string) (string, error) {
+// 	parts := strings.Split(tokenString, " ")
+// 	if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
+// 		return "", errors.New("Unauthorized")
+// 	}
+// 	accessToken := parts[1]
+
+// 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
+// 		return secretKey, nil
+// 	})
+// 	if err != nil {
+// 		return "", fmt.Errorf("failed to parse token: %w", err)
+// 	}
+// 	if !token.Valid {
+// 		return "", errors.New("invalid token")
+// 	}
+// 	claims, ok := token.Claims.(jwt.MapClaims)
+// 	if !ok {
+// 		return "", errors.New("invalid claims format")
+// 	}
+// 	// userID := claims[TokenUserID].(string)
+// 	// expirationTime := claims[TokenExpireTime].Unix()
+// 	// if expirationTime.Before(time.Now()) {
+// 	// 	return "", errors.New("token has expired")
+// 	// }
+
+// 	// return userID, nil
+
+
+
+
 // 	// token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 // 	// 	return secretKey, nil
 // 	// })
@@ -42,47 +73,21 @@
 // 	// if !ok {
 // 	// 	return "", errors.New("invalid claims format")
 // 	// }
-// 	// userID := claims[TokenUserID].(string)
-// 	// expirationTime := claims[TokenExpireTime].Unix()
-// 	// if expirationTime.Before(time.Now()) {
-// 	// 	return "", errors.New("token has expired")
-// 	// }
+// 	userID, ok := claims[TokenUserID].(string)
+// 	if !ok {
+// 		return "", errors.New("invalid user ID format")
+// 	}
+// 	expireTimeClaim, ok := claims[TokenExpireTime].(float64)
+// 	if !ok {
+// 		return "", errors.New("invalid expiration time format")
+// 	}
+// 	expirationTime := time.Unix(int64(expireTimeClaim), 0)
+// 	if expirationTime.Before(time.Now()) {
+// 		return "", errors.New("token has expired")
+// 	}
 
-// 	// return userID, nil
-// 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-//         return secretKey, nil
-//     })
-//     if err != nil {
-//         return "", fmt.Errorf("failed to parse token: %w", err)
-//     }
-//     if !token.Valid {
-//         return "", errors.New("invalid token")
-//     }
-//     claims, ok := token.Claims.(jwt.MapClaims)
-//     if !ok {
-//         return "", errors.New("invalid claims format")
-//     }
-//     userID, ok := claims[TokenUserID].(string)
-//     if !ok {
-//         return "", errors.New("invalid user ID format")
-//     }
-//     expireTimeClaim, ok := claims[TokenExpireTime].(float64)
-//     if !ok {
-//         return "", errors.New("invalid expiration time format")
-//     }
-//     expirationTime := time.Unix(int64(expireTimeClaim), 0)
-//     if expirationTime.Before(time.Now()) {
-//         return "", errors.New("token has expired")
-//     }
-
-//     return userID, nil
+// 	return userID, nil
 // }
-
-
-
-
-
-
 
 package api
 
@@ -142,7 +147,3 @@ func ValidateToken(tokenString string) (string, error) {
 
 	return userID, nil
 }
-
-
-
-

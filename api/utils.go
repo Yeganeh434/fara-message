@@ -45,8 +45,10 @@ func GetUserIDFromToken(tokenString string) (string, error) {
 	if !ok {
 		return "", errors.New("invalid claims format")
 	}
+
 	userID := claims[TokenUserID].(string)
-	expirationTime := claims[TokenExpireTime].(time.Time)
+	expirationTimeUnix := claims[TokenExpireTime].(float64)
+	expirationTime := time.Unix(int64(expirationTimeUnix), 0)
 	if expirationTime.Before(time.Now()) {
 		return "", errors.New("token has expired")
 	}
