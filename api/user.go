@@ -253,17 +253,23 @@ func GetContactHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	var contacts ContactsResponse
 	dbContacts, err := db.Mysql.GetContact(intOfUserID)
 	if err != nil {
 		log.Printf("error get contacts:%v", err)
 		c.Status(400)
 		return
 	}
-	for i, value := range dbContacts {
-		contacts.Contacts[i].Username = value.Username
-		contacts.Contacts[i].FirstName = value.FirstName
-		contacts.Contacts[i].LastName = value.LastName
+	var contacts []AnotherUserInfo
+	for _, value := range dbContacts {
+		contacts=append(contacts,AnotherUserInfo{
+			Username: value.Username,
+			FirstName: value.FirstName,
+			LastName: value.LastName,
+		})
 	}
-	c.JSON(http.StatusOK, contacts)
+	var contactsResponse ContactsResponse
+	for _, value := range contacts {
+		contactsResponse.Contacts = append(contactsResponse.Contacts, value)
+	}
+	c.JSON(http.StatusOK, contactsResponse)
 }

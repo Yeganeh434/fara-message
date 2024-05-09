@@ -62,7 +62,7 @@ func (d *Database) AddContact(userID int, contactID int) error {
 }
 
 func (d *Database) DeleteContact(userID int, contactID int) error {
-	result := d.db.Where("UserID=? AND ContactID", userID, contactID).Delete(&Contacts{})
+	result := d.db.Where("user_id=? AND contact_id=?", userID, contactID).Delete(&Contacts{})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -71,7 +71,8 @@ func (d *Database) DeleteContact(userID int, contactID int) error {
 
 func (d *Database) GetContact(userID int) ([]User, error) {
 	var contacts []User
-	result := d.db.Table("Contacts").Select("User.*").Joins("JOIN User ON Contacts.ContactID=User.ID").Where("Contacts.UserID=?", userID).Find(&contacts)
+	// result := d.db.Table("contacts").Select("User.*").Joins("JOIN users ON contacts.contact_id=users.id").Where("contacts.user_id=?", userID).Find(&contacts)
+	result := d.db.Table("contacts").Select("users.*").Joins("JOIN users ON contacts.contact_id = users.ID").Where("contacts.user_id = ?", userID).Find(&contacts)
 	if result.Error != nil {
 		return nil, result.Error
 	}
