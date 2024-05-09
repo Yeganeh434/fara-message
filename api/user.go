@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -37,7 +36,6 @@ type UsernameType struct {
 
 func ReadUserHandler(c *gin.Context) {
 	if c.Request.ContentLength != 0 {
-		fmt.Println("!!!!!!!!!!!!!!yseeeesssS!!!!!!!!!!!!!!!!!!!!")
 		var username UsernameType
 		err := c.BindJSON(&username)
 		if err != nil {
