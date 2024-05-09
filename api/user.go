@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -72,13 +71,7 @@ func ReadUserHandler(c *gin.Context) {
 			return
 		} else {
 			userInfo := ConvertdbUser(user)
-			convertUserToJSON, err := json.Marshal(userInfo)
-			if err != nil {
-				log.Printf("error marshaling:%v", err)
-				c.Status(400)
-				return
-			}
-			c.JSON(http.StatusOK, convertUserToJSON)
+			c.JSON(http.StatusOK, userInfo)
 		}
 	}
 }
