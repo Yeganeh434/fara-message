@@ -13,6 +13,11 @@ type UsernameType struct {
 	Username string `json:"username"`
 }
 
+type PasswordType struct {
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirmPassword"`
+}
+
 type UpdateUser struct {
 	Username    string `json:"username"`
 	FirstName   string `json:"firstname"`
@@ -123,6 +128,43 @@ func DeleteUserHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"message": "user deleted successfully",
+	})
+}
+
+func changePasswordHandler(c *gin.Context) {
+	userID, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
+		c.Status(400)
+		return
+	}
+	var newPassword PasswordType
+	err = c.BindJSON(&newPassword)
+	if err != nil {
+		log.Printf("error binding JSON:%v", err)
+		c.Status(400)
+		return
+	}
+	if len(newPassword.Password) < 8 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "password is too short!",
+		})
+		return
+	}
+	if newPassword.Password != newPassword.ConfirmPassword {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "the password does not match the password confirmation",
+		})
+		return
+	}
+	err = db.Mysql.ChangePassword(userID, newPassword.Password)
+	if err != nil {
+		log.Printf("error changing password:%v", err)
+		c.Status(400)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "password change successfully",
 	})
 }
 

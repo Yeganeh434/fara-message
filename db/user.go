@@ -72,3 +72,11 @@ func (d *Database) GetContact(userID int) ([]User, error) {
 	}
 	return contacts, nil
 }
+
+func (d *Database) ChangePassword(ID string,newPassword string) error {
+	result:=d.db.Model(&User{}).Where("ID=?",ID).Update("Password",newPassword)
+	if result.Error !=nil {
+		return result.Error
+	}
+	return nil
+} 
