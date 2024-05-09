@@ -14,12 +14,12 @@ import (
 
 type RegisterForm struct {
 	Username        string `json:"username"`
-	FirstName       string `json:"first_name"`
-	LastName        string `json:"last_name"`
+	FirstName       string `json:"firstName"`
+	LastName        string `json:"lastName"`
 	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirm_password"`
+	ConfirmPassword string `json:"confirmPassword"`
 	Gender          int    `json:"gender"`
-	DateOfBirth     string `json:"date_of_birth"`
+	DateOfBirth     string `json:"dateOfBirth"`
 }
 
 type tokenJSON struct {
@@ -41,12 +41,12 @@ func RegisterHandler(c *gin.Context) {
 
 	user, err := convertRegisterFormToUser(requestBody)
 	if err != nil {
-		log.Printf("failed to convert register form to user:%v",err)
+		log.Printf("failed to convert register form to user:%v", err)
 		return
 	}
 
 	token, err := CreateJWTToken(user.ID)
-	
+
 	if err != nil {
 		log.Print("failed to create token")
 		return

@@ -38,7 +38,7 @@ func changePassword(c *gin.Context) {
 		return
 	}
 	userUnderReview.Password = userData.Password
-	err = db.Mysql.UpdateUser(userUnderReview.ID, db.ConvertUserToUserInfo(userUnderReview))
+	// err = db.Mysql.UpdateUser(userUnderReview.ID, db.ConvertUserToUserInfo(userUnderReview))
 	if err != nil {
 		log.Printf("error updating user:%v", err)
 		c.Status(400)

@@ -13,6 +13,14 @@ type UsernameType struct {
 	Username string `json:"username"`
 }
 
+type UpdateUser struct {
+	Username    string `json:"username"`
+	FirstName   string `json:"firstname"`
+	LastName    string `json:"lastname"`
+	Gender      int    `json:"gender"`
+	DateOfBirth string `json:"dateOfBirth"`
+}
+
 // func CreateUserHandler(c *gin.Context) {
 // 	var newUser db.User
 // 	err := c.BindJSON(&newUser)
@@ -81,14 +89,14 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	var newInfo UserInfo
+	var newInfo UpdateUser
 	err = c.BindJSON(&newInfo)
 	if err != nil {
 		log.Printf("error binding JSON:%v", err)
 		c.Status(400)
 		return
 	}
-	dbUserInfo := ConvertUserInfo(newInfo)
+	dbUserInfo := ConvertUpdateUser(newInfo)
 	err = db.Mysql.UpdateUser(userID, dbUserInfo)
 	if err != nil {
 		log.Printf("error updating user:%v", err)

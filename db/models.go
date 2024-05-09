@@ -10,9 +10,10 @@ type Message struct {
 	ChatID   int `gorm:"foreign_key"`
 	Content  string
 }
+
 // 0 equals male and 1 equals female
 type User struct {
-	ID          string `gorm:"primary_key"`    
+	ID          string `gorm:"primary_key"`
 	Username    string
 	FirstName   string
 	LastName    string
@@ -27,14 +28,14 @@ type UserInfo struct {
 	Username    string    `json:"username"`
 	FirstName   string    `json:"firstname"`
 	LastName    string    `json:"lastname"`
-	Gender      int    `json:"gender"`
+	Gender      int       `json:"gender"`
 	DateOfBirth time.Time `json:"dateOfBirth"`
 	CreatedTime time.Time `json:"createdTime"`
 }
 
 type Contacts struct {
-	UserID           int `gorm:"foreignkey:ID"`
-	ContactID        int `gorm:"foreignkey:ID"`
+	UserID    int `gorm:"foreignkey:ID"`
+	ContactID int `gorm:"foreignkey:ID"`
 }
 
 func ConvertUserToUserInfo(user User) UserInfo {

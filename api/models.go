@@ -71,3 +71,15 @@ func ConvertdbUser(newInfo db.User) UserInfo {
 		CreatedTime: newInfo.CreatedTime,
 	}
 }
+
+func ConvertUpdateUser(newInfo UpdateUser) db.User {
+	layout := "2003-04-06"
+	date, _ := time.Parse(layout, newInfo.DateOfBirth) //handle error!!!!!!!!!!!!!!!
+	return db.User{
+		Username:    newInfo.Username,
+		FirstName:   newInfo.FirstName,
+		LastName:    newInfo.LastName,
+		Gender:      newInfo.Gender,
+		DateOfBirth: date,
+	}
+}
