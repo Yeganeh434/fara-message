@@ -48,8 +48,13 @@ func (d *Database) DeleteUser(ID string) error {
 }
 
 func (d *Database) AddContact(userID int, contactID int) error {
+	var user User
+	result := d.db.First(&user, "ID=?", contactID)
+	if result.Error != nil {
+		return result.Error
+	}
 	contact := Contacts{UserID: userID, ContactID: contactID}
-	result := d.db.Create(&contact)
+	result = d.db.Create(&contact)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -73,10 +78,10 @@ func (d *Database) GetContact(userID int) ([]User, error) {
 	return contacts, nil
 }
 
-func (d *Database) ChangePassword(ID string,newPassword string) error {
-	result:=d.db.Model(&User{}).Where("ID=?",ID).Update("Password",newPassword)
-	if result.Error !=nil {
+func (d *Database) ChangePassword(ID string, newPassword string) error {
+	result := d.db.Model(&User{}).Where("ID=?", ID).Update("Password", newPassword)
+	if result.Error != nil {
 		return result.Error
 	}
 	return nil
-} 
+}
