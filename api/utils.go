@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/golang-jwt/jwt"
 )
@@ -66,4 +67,59 @@ func GetUserID(authorizationHeader string) (string, error) {
 		return "", err
 	}
 	return userID, nil
+}
+
+func IsStrongPassword(password string) bool {
+	if len(password) < 8 {
+		return false
+	}
+
+	hasSpecialChar := false
+	specialChars := "!@#$%^&*()_-|{}[]?<>.,"
+	for _, char := range password {
+		for _, specialChar := range specialChars {
+			if char == specialChar {
+				hasSpecialChar = true
+				break
+			}
+		}
+	}
+	if !hasSpecialChar {
+		return hasSpecialChar
+	}
+
+	hasDigit := false
+	for _, char := range password {
+		if unicode.IsDigit(char) {
+			hasDigit = true
+			break
+		}
+	}
+	if !hasDigit {
+		return hasDigit
+	}
+
+	hasUppercase := false
+	for _, char := range password {
+		if unicode.IsUpper(char) {
+			hasUppercase = true
+			break
+		}
+	}
+	if !hasUppercase {
+		return hasUppercase
+	}
+
+	hasLowercase := false
+	for _, char := range password {
+		if unicode.IsLower(char) {
+			hasLowercase = true
+			break
+		}
+	}
+	if !hasLowercase {
+		return hasLowercase
+	}
+
+	return true
 }

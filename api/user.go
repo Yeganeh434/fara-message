@@ -145,15 +145,15 @@ func changePasswordHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	if len(newPassword.Password) < 8 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "password is too short!",
-		})
-		return
-	}
 	if newPassword.Password != newPassword.ConfirmPassword {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"message": "the password does not match the password confirmation",
+		})
+		return
+	}
+	if !IsStrongPassword(newPassword.Password) {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "your password must be at least 8 characters long and contain uppercase letter,lowercase letter,digit, and special character",
 		})
 		return
 	}

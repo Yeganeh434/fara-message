@@ -61,13 +61,12 @@ func RegisterHandler(c *gin.Context) {
 
 // other validation fields will be added...
 func validateUser(form RegisterForm) error {
-	if len(form.Password) < 8 {
-		return errors.New("password is too short")
-	}
 	if form.Password != form.ConfirmPassword {
 		return errors.New("password does not match")
 	}
-
+	if !IsStrongPassword(form.Password) {
+		return errors.New("your password must be at least 8 characters long and contain uppercase letter,lowercase letter,digit, and special character")
+	}
 	return nil
 }
 
