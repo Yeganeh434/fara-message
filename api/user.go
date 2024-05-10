@@ -157,6 +157,7 @@ func changePasswordHandler(c *gin.Context) {
 		})
 		return
 	}
+	newPassword.Password=hash(newPassword.Password)
 	err = db.Mysql.ChangePassword(userID, newPassword.Password)
 	if err != nil {
 		log.Printf("error changing password:%v", err)

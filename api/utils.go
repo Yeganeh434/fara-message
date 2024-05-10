@@ -1,6 +1,8 @@
 package api
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -11,13 +13,13 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-// func hash(input string) string {
-// 	hasher := sha1.New()
-// 	hasher.Write([]byte(input))
-// 	hashedBytes := hasher.Sum(nil)
-// 	hashedString := hex.EncodeToString(hashedBytes)
-// 	return hashedString
-// }
+func hash(input string) string {
+	hasher := sha1.New()
+	hasher.Write([]byte(input))
+	hashedBytes := hasher.Sum(nil)
+	hashedString := hex.EncodeToString(hashedBytes)
+	return hashedString
+}
 
 func generateID() string {
 	const charset = "0123456789"

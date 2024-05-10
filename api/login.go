@@ -40,7 +40,7 @@ func authenticateUser(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
 	}
-	if loginData.Password!=userUnderReveiw.Password {
+	if hash(loginData.Password)!=userUnderReveiw.Password {
 		log.Printf("the password is incorrect")
 		c.Status(400)
 		return

@@ -39,6 +39,7 @@ func RegisterHandler(c *gin.Context) {
 		return
 	}
 
+	requestBody.Password=hash(requestBody.Password)
 	user, err := convertRegisterFormToUser(requestBody)
 	if err != nil {
 		log.Printf("failed to convert register form to user:%v", err)
