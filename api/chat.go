@@ -70,8 +70,8 @@ func NewGroupChatHandler(c *gin.Context) {
 		log.Print("failed to bind json, ", err)
 		return
 	}
-	for _,value:=range requestBody.Users {
-		user, err:= db.Mysql.ReadUserByUsername(value)
+	for _, value := range requestBody.Users {
+		user, err := db.Mysql.ReadUserByUsername(value)
 		if err != nil {
 			log.Printf("error getting user:%v ", err)
 			return

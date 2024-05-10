@@ -45,11 +45,11 @@ func SendMessageHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	ID, _ := strconv.Atoi(userID)
-	message.SenderID = ID
+	senderID, _ := strconv.Atoi(userID)
+	messageID, _ := strconv.Atoi(generateID())
 	dbMessage := db.Message{
-		ID:       message.ID,
-		SenderID: message.SenderID,
+		ID:       messageID,
+		SenderID: senderID,
 		ChatID:   message.ChatID,
 		Content:  message.Content,
 	}
