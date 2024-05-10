@@ -1,61 +1,30 @@
 package db
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
 )
 
-type Chat struct {
-	ID          int64  `gorm:"primary_key"`
-	Name        string `gorm:"chat_name;default:' '"`
-	CreatedTime time.Time
-	DeletedTime time.Time
-	Type        ChatType
-}
-
-type ChatMember struct {
-	UserID     int64 `gorm:"foreign_key"`
-	User       User
-	ChatID     int64 `gorm:"foreign_key"`
-	Chat       Chat
-	JoinedTime time.Time
-	LeftTime   time.Time
-}
-type ChatType struct {
-	chatType int
-}
-
-func (c *ChatType) Int() int {
-	return c.chatType
-}
-
-var (
-	Direct  = ChatType{chatType: 0}
-	Group   = ChatType{chatType: 1}
-	Unknown = ChatType{chatType: -1}
-)
-
-func (d *Database) NewChat(chatName string, chatType ChatType, user []User) error {
+func (d *Database) NewChat(chatID string, chatName string, chatType int, users []string) error {
+	id, _ := strconv.Atoi(chatID)
 	chat := Chat{
+		ID:          id,
 		Name:        chatName,
 		Type:        chatType,
 		CreatedTime: time.Now(),
 	}
-	var chatMembers []ChatMember
-	for i, u := range user {
-		userID, _ := strconv.Atoi(u.ID)
-		chatMembers[i] = ChatMember{
+	var chatMember ChatMember
+	for _, value := range users {
+		userID, _ := strconv.Atoi(value)
+		chatMember = ChatMember{
 			JoinedTime: time.Now(),
 			ChatID:     chat.ID,
-			UserID:     int64(userID),
+			UserID:     userID,
 		}
-
-		if err := d.db.Create(&chatMembers).Error; err != nil {
-			d.db.Delete(&chatMembers)
-			return errors.New("cannot create chat member")
-
+		if err := d.db.Create(&chatMember).Error; err != nil {
+			// d.db.Delete(&chatMembers)
+			return err
 		}
 	}
 

@@ -4,6 +4,20 @@ import (
 	"time"
 )
 
+// 0 equals direct chat and 1 equals group chat
+type Chat struct {
+	ID          int `gorm:"primary_key"`
+	Name        string
+	CreatedTime time.Time
+	Type        int
+}
+
+type ChatMember struct {
+	ChatID     int `gorm:"foreignkey:ID"`
+	UserID     int `gorm:"foreignkey:ID"`
+	JoinedTime time.Time
+}
+
 type Message struct {
 	ID       int `gorm:"primary_key"`
 	SenderID int `gorm:"foreign_key"`
