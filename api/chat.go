@@ -6,14 +6,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/goccy/go-json"
 	"github.com/mhghw/fara-message/db"
 )
 
-type ChatRequest struct {
-	ID   int    `json:"chatId"`
-	Name string `json:"chatName"`
-}
 type GroupChatRequest struct {
 	ChatName string   `json:"chatName"`
 	Users    []string `json:"users"`
@@ -90,31 +85,22 @@ func NewGroupChatHandler(c *gin.Context) {
 }
 
 func GetChatMessagesHandler(c *gin.Context) {
-	var requestBody ChatRequest
-	err := c.BindJSON(&requestBody)
-	if err != nil {
-		log.Printf("failed to bind json: %v", err)
-		return
-	}
-	chatID := requestBody.ID
-	messages, err := db.Mysql.GetChatMessages(int64(chatID))
+	chatIDString := c.Param("id")
+	chatID, _ := strconv.Atoi(chatIDString)
+	messages, err := db.Mysql.GetChatMessages(chatID)
 	if err != nil {
 		log.Print(err)
 		return
 	}
-	chatMessages, err := json.Marshal(messages)
-	if err != nil {
-		log.Print("failed to marshal json", err)
-		return
-	}
-	c.JSON(200, chatMessages)
-
+	c.JSON(200, messages)
 }
 
-func GetUsersChatsHandler(c *gin.Context) {
-	userIDString := c.Param("id")
-	userID, _ := strconv.Atoi(userIDString)
-	chatMembers, err := db.Mysql.GetUsersChatMembers(userID)
+
+//response!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+func GetChatMembersHandler(c *gin.Context) {
+	chatIDString := c.Param("id")
+	chatID, _ := strconv.Atoi(chatIDString)
+	chatMembers, err := db.Mysql.GetChatMembers(chatID)
 	if err != nil {
 		log.Print("failed to get users chat members")
 		return

@@ -24,7 +24,8 @@ func RunWebServer(port int) error {
 	router.DELETE("/delete/message", DeleteMessageHandler)
 	router.POST("/new_direct_chat", NewDirectChatHandler)
 	router.POST("/new_group_chat", NewGroupChatHandler)
-	router.GET("/chat/messages", GetChatMessagesHandler)
+	router.GET("/chat/messages/:id", GetChatMessagesHandler)
+	router.GET("/user/chat/list/:id",GetChatMembersHandler)
 	err := router.Run(addr)
 	return err
 }

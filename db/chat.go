@@ -32,7 +32,7 @@ func (d *Database) NewChat(chatID string, chatName string, chatType int, users [
 	return nil
 }
 
-func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
+func (d *Database) GetChatMessages(ChatID int) ([]Message, error) {
 	var messages []Message
 	if err := d.db.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
@@ -40,10 +40,11 @@ func (d *Database) GetChatMessages(ChatID int64) ([]Message, error) {
 	return messages, nil
 }
 
-func (d *Database) GetUsersChatMembers(userID int) ([]ChatMember, error) {
-	var usersChats []ChatMember
-	if err := d.db.Where("user_id = ?", userID).Find(&usersChats).Error; err != nil {
-		return nil, fmt.Errorf("no  chat found for user %w", err)
+func (d *Database) GetChatMembers(chatID int) ([]User, error) {
+	var members []User
+	result := d.db.Table("chat_members").Select("users.*").Joins("JOIN users ON chat_members.user_id = users.ID").Where("chat_members.chat_id = ?", chatID).Find(&members)
+	if result.Error != nil {
+		return nil, result.Error
 	}
-	return usersChats, nil
+	return members, nil
 }
