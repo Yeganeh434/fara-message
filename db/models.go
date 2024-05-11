@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -35,6 +36,7 @@ type User struct {
 	Gender      int
 	DateOfBirth time.Time
 	CreatedTime time.Time
+	DeletedAt   sql.NullTime
 }
 
 type UserInfo struct {
