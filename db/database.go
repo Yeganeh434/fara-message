@@ -14,7 +14,7 @@ type Database struct {
 	db *gorm.DB
 }
 
-func init() {
+func InitialDatabase() {
 	var err error
 	dsn := "root:Yeganeh-2004@tcp(localhost:3306)/faramessage?charset=utf8mb4&parseTime=True&loc=Local"
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})

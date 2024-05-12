@@ -27,6 +27,7 @@ func authenticateUser(c *gin.Context) {
 	errIncorrectUserOrPassJSON, errInMarshalling := json.Marshal(errIncorrectUserOrPass)
 	if errInMarshalling != nil {
 		log.Printf("error:%v", errInMarshalling)
+		c.Status(400)
 		return
 	}
 
@@ -45,7 +46,14 @@ func authenticateUser(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": "you are logged in",
-	})
+
+	token, err := CreateJWTToken(userUnderReveiw.ID)
+	if err != nil {
+		log.Print("failed to create token")
+		return
+	}
+	userToken := tokenJSON{
+		Token: token,
+	}
+	c.JSON(http.StatusOK,userToken)
 }
