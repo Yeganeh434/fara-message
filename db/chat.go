@@ -48,3 +48,33 @@ func (d *Database) GetChatMembers(chatID int) ([]User, error) {
 	}
 	return members, nil
 }
+
+// if empty!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+func (d *Database) GetChatsList(userID string) ([]string, error) {
+	//get groups name
+	var chatsName []string
+	result := d.db.Table("chats").Select("chats.name").Joins("JOIN chat_members ON chats.id=chat_members.chat_id").Where("chats.type=? AND chat_members.user_id=?", 1, userID).Find(&chatsName)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	//get direct chats name
+	var usersID []string
+	subQuery := d.db.Table("chats").Select("chats.id").Joins("JOIN chat_members ON chat_members.chat_id=chats.id").Where("chats.type=? AND chat_members.user_id=?", 0, userID)
+	if subQuery.Error != nil {
+		return nil, subQuery.Error
+	}
+	result = d.db.Table("chat_members").Select("user_id").Where("chat_id IN (?)", subQuery).Not("user_id=?", userID).Find(&usersID)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	for _, value := range usersID {
+		user, err := d.ReadUser(value)
+		if err != nil {
+			return nil,err
+		}
+		name := user.FirstName + " " + user.LastName
+		chatsName = append(chatsName, name)
+	}
+	return chatsName, nil
+}

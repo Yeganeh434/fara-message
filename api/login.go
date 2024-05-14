@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -24,24 +23,18 @@ func authenticateUser(c *gin.Context) {
 	}
 
 	errIncorrectUserOrPass := HTTPError{Message: "the username or password is incorrect"}
-	errIncorrectUserOrPassJSON, errInMarshalling := json.Marshal(errIncorrectUserOrPass)
-	if errInMarshalling != nil {
-		log.Printf("error:%v", errInMarshalling)
-		c.Status(400)
-		return
-	}
 
 	if len(loginData.Username) < 3 || len(loginData.Password) < 8 {
-		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
+		c.JSON(http.StatusBadRequest, errIncorrectUserOrPass)
 		return
 	}
 
 	//checking entered data with data that is already stored
 	userUnderReveiw, err := db.Mysql.ReadUserByUsername(loginData.Username)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, errIncorrectUserOrPassJSON)
+		c.JSON(http.StatusBadRequest, errIncorrectUserOrPass)
 	}
-	if hash(loginData.Password)!=userUnderReveiw.Password {
+	if hash(loginData.Password) != userUnderReveiw.Password {
 		log.Printf("the password is incorrect")
 		c.Status(400)
 		return
@@ -55,5 +48,5 @@ func authenticateUser(c *gin.Context) {
 	userToken := tokenJSON{
 		Token: token,
 	}
-	c.JSON(http.StatusOK,userToken)
+	c.JSON(http.StatusOK, userToken)
 }

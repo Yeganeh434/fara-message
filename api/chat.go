@@ -95,8 +95,7 @@ func GetChatMessagesHandler(c *gin.Context) {
 	c.JSON(200, messages)
 }
 
-
-//response!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// response!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 func GetChatMembersHandler(c *gin.Context) {
 	chatIDString := c.Param("id")
 	chatID, _ := strconv.Atoi(chatIDString)
@@ -108,3 +107,18 @@ func GetChatMembersHandler(c *gin.Context) {
 	c.JSON(200, chatMembers)
 }
 
+func GetChatsListHandler(c *gin.Context) {
+	userID, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
+		c.Status(400)
+		return
+	}
+	chatsName, err := db.Mysql.GetChatsList(userID)
+	if err != nil {
+		log.Printf("error get chats name:%v", err)
+		c.Status(400)
+		return
+	}
+	c.JSON(http.StatusOK, chatsName)
+}
