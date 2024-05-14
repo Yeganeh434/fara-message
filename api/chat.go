@@ -29,18 +29,39 @@ func NewDirectChatHandler(c *gin.Context) {
 	err = c.BindJSON(&requestBody)
 	if err != nil {
 		log.Printf("failed to bind json,%v ", err)
+		c.Status(400)
 		return
 	}
 	user2, err := db.Mysql.ReadUserByUsername(requestBody.User)
 	if err != nil {
 		log.Printf("error getting user:%v ", err)
+		c.Status(400)
 		return
 	}
 
 	var users []string
-	users = append(users, user1, user2.ID)
+	intOfUser1, _ := strconv.Atoi(user1)
+	intOfUser2, _ := strconv.Atoi(user2.ID)
+	if intOfUser1 < intOfUser2 {
+		users = append(users, user1, user2.ID)
+	} else {
+		users = append(users, user2.ID, user1)
+	}
+	isChatExist, err := db.Mysql.IsExist(users)
+	if err != nil {
+		log.Printf("error:%v ", err)
+		c.Status(400)
+		return
+	}
+	if isChatExist {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "this chat has already been created",
+		})
+		return
+	}
 	if err := db.Mysql.NewChat(generateID(), "", 0, users); err != nil {
 		log.Print("failed to create chat, ", err)
+		c.Status(400)
 		return
 	}
 

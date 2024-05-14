@@ -7,9 +7,14 @@ import (
 )
 
 func (d *Database) NewChat(chatID string, chatName string, chatType int, users []string) error {
+	hashID := ""
+	if chatType == 0 {
+		hashID = users[0] + users[1]
+	}
 	id, _ := strconv.Atoi(chatID)
 	chat := Chat{
 		ID:          id,
+		HashID:      hashID,
 		Name:        chatName,
 		Type:        chatType,
 		CreatedTime: time.Now(),
@@ -30,6 +35,19 @@ func (d *Database) NewChat(chatID string, chatName string, chatType int, users [
 
 	d.db.Create(&chat)
 	return nil
+}
+
+func (d *Database) IsExist(users []string) (bool, error) {
+	hashID := users[0] + users[1]
+	var dbHashID string
+	result := d.db.Table("chats").Select("hash_id").Where("hash_id=?",hashID).Find(&dbHashID)
+	if result.Error != nil {
+		return true, result.Error
+	}
+	if dbHashID == hashID {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (d *Database) GetChatMessages(ChatID int) ([]Message, error) {
@@ -71,7 +89,7 @@ func (d *Database) GetChatsList(userID string) ([]string, error) {
 	for _, value := range usersID {
 		user, err := d.ReadUser(value)
 		if err != nil {
-			return nil,err
+			return nil, err
 		}
 		name := user.FirstName + " " + user.LastName
 		chatsName = append(chatsName, name)

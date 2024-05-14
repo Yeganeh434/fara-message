@@ -8,6 +8,7 @@ import (
 // 0 equals direct chat and 1 equals group chat
 type Chat struct {
 	ID          int `gorm:"primary_key"`
+	HashID      string
 	Name        string
 	CreatedTime time.Time
 	Type        int
