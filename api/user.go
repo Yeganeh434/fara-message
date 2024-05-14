@@ -157,7 +157,7 @@ func changePasswordHandler(c *gin.Context) {
 		})
 		return
 	}
-	newPassword.Password=hash(newPassword.Password)
+	newPassword.Password = hash(newPassword.Password)
 	err = db.Mysql.ChangePassword(userID, newPassword.Password)
 	if err != nil {
 		log.Printf("error changing password:%v", err)
@@ -194,7 +194,13 @@ func AddContactHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	err = db.Mysql.AddContact(intOfUserID, intOfContactID)
+	ID, err := strconv.Atoi(generateID())
+	if err != nil {
+		log.Printf("error converting to int:%v", err)
+		c.Status(400)
+		return
+	}
+	err = db.Mysql.AddContact(ID, intOfUserID, intOfContactID)
 	if err != nil {
 		log.Printf("error add contact to database:%v", err)
 		c.Status(400)
@@ -262,10 +268,10 @@ func GetContactHandler(c *gin.Context) {
 	}
 	var contacts []AnotherUserInfo
 	for _, value := range dbContacts {
-		contacts=append(contacts,AnotherUserInfo{
-			Username: value.Username,
+		contacts = append(contacts, AnotherUserInfo{
+			Username:  value.Username,
 			FirstName: value.FirstName,
-			LastName: value.LastName,
+			LastName:  value.LastName,
 		})
 	}
 	var contactsResponse ContactsResponse

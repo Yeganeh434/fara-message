@@ -47,13 +47,13 @@ func (d *Database) DeleteUser(ID string) error {
 	return nil
 }
 
-func (d *Database) AddContact(userID int, contactID int) error {
+func (d *Database) AddContact(id int, userID int, contactID int) error {
 	var user User
 	result := d.db.First(&user, "ID=?", contactID)
 	if result.Error != nil {
 		return result.Error
 	}
-	contact := Contacts{UserID: userID, ContactID: contactID}
+	contact := Contacts{ID: id, UserID: userID, ContactID: contactID}
 	result = d.db.Create(&contact)
 	if result.Error != nil {
 		return result.Error
