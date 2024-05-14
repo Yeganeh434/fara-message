@@ -37,7 +37,7 @@ func (d *Database) NewChat(chatID string, chatName string, chatType int, users [
 	return nil
 }
 
-func (d *Database) IsExist(users []string) (bool, error) {
+func (d *Database) IsChatExist(users []string) (bool, error) {
 	hashID := users[0] + users[1]
 	var dbHashID string
 	result := d.db.Table("chats").Select("hash_id").Where("hash_id=?",hashID).Find(&dbHashID)

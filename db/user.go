@@ -61,6 +61,18 @@ func (d *Database) AddContact(id int, userID int, contactID int) error {
 	return nil
 }
 
+func (d *Database) IsContactExist(userID int, contactID int)(bool ,error){
+	var contact Contacts
+	result:=d.db.Table("contacts").Select("contacts.*").Where("user_id=? AND contact_id=?",userID,contactID).Find(&contact)
+	if result.Error != nil {
+		return true,result.Error
+	}
+	if contact.ID==0 {
+		return false,nil
+	}
+	return true,nil
+}
+
 func (d *Database) DeleteContact(userID int, contactID int) error {
 	result := d.db.Where("user_id=? AND contact_id=?", userID, contactID).Delete(&Contacts{})
 	if result.Error != nil {

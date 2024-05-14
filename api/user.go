@@ -200,6 +200,18 @@ func AddContactHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+	isContactExist, err := db.Mysql.IsContactExist(intOfUserID, intOfContactID)
+	if err != nil {
+		log.Printf("error:%v", err)
+		c.Status(400)
+		return
+	}
+	if isContactExist {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "you have already added this contact",
+		})
+		return
+	}
 	err = db.Mysql.AddContact(ID, intOfUserID, intOfContactID)
 	if err != nil {
 		log.Printf("error add contact to database:%v", err)

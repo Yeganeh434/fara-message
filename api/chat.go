@@ -47,7 +47,7 @@ func NewDirectChatHandler(c *gin.Context) {
 	} else {
 		users = append(users, user2.ID, user1)
 	}
-	isChatExist, err := db.Mysql.IsExist(users)
+	isChatExist, err := db.Mysql.IsChatExist(users)
 	if err != nil {
 		log.Printf("error:%v ", err)
 		c.Status(400)
