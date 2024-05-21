@@ -98,3 +98,15 @@ func (d *Database) ChangePassword(ID string, newPassword string) error {
 	}
 	return nil
 }
+
+func (d *Database) IsUsernameAvailable(username string) (bool,error){
+	var dbUsername string
+	result:=d.db.Table("users").Select("users.username").Where("username=?",username).Find(&dbUsername)
+	if result.Error!=nil {
+		return false,result.Error
+	}
+	if len(dbUsername)==0 {
+		return true,nil
+	}
+	return false,nil
+}

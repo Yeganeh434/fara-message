@@ -31,18 +31,22 @@ func RegisterHandler(c *gin.Context) {
 	err := c.BindJSON(&requestBody)
 	if err != nil {
 		log.Printf("failed to bind json:%v", err)
+		c.Status(400)
 		return
 	}
 	err = validateUser(requestBody)
 	if err != nil {
-		log.Printf("failed to validate user:%v", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"failed to validate user": err.Error(),
+		})
 		return
 	}
 
-	requestBody.Password=hash(requestBody.Password)
+	requestBody.Password = hash(requestBody.Password)
 	user, err := convertRegisterFormToUser(requestBody)
 	if err != nil {
 		log.Printf("failed to convert register form to user:%v", err)
+		c.Status(400)
 		return
 	}
 
@@ -50,6 +54,7 @@ func RegisterHandler(c *gin.Context) {
 
 	if err != nil {
 		log.Print("failed to create token")
+		c.Status(400)
 		return
 	}
 	userToken := tokenJSON{
@@ -65,9 +70,19 @@ func validateUser(form RegisterForm) error {
 	if form.Password != form.ConfirmPassword {
 		return errors.New("password does not match")
 	}
+
 	if !IsStrongPassword(form.Password) {
 		return errors.New("your password must be at least 8 characters long and contain uppercase letter,lowercase letter,digit, and special character")
 	}
+
+	isUsernameAvailable, err := db.Mysql.IsUsernameAvailable(form.Username)
+	if err != nil {
+		return err
+	}
+	if !isUsernameAvailable {
+		return errors.New("this username is not available")
+	}
+
 	return nil
 }
 
