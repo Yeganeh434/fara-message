@@ -113,10 +113,13 @@ func GetChatMessagesHandler(c *gin.Context) {
 		log.Print(err)
 		return
 	}
-	c.JSON(200, messages)
+	var messagesResponse []Message
+	for _, value := range messages {
+		messagesResponse = append(messagesResponse, ConvertMessage(value))
+	}
+	c.JSON(200, messagesResponse)
 }
 
-// response!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 func GetChatMembersHandler(c *gin.Context) {
 	chatIDString := c.Param("id")
 	chatID, _ := strconv.Atoi(chatIDString)
@@ -125,7 +128,11 @@ func GetChatMembersHandler(c *gin.Context) {
 		log.Print("failed to get users chat members")
 		return
 	}
-	c.JSON(200, chatMembers)
+	var chatMembersResponse []string
+	for _, value := range chatMembers {
+		chatMembersResponse = append(chatMembersResponse, value.FirstName+" "+value.LastName)
+	}
+	c.JSON(200, chatMembersResponse)
 }
 
 func GetChatsListHandler(c *gin.Context) {

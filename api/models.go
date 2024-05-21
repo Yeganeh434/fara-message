@@ -48,6 +48,15 @@ type ContactsResponse struct {
 	Contacts []AnotherUserInfo `json:"contacts"`
 }
 
+func ConvertMessage(messageInfo db.Message) Message{
+	return Message{
+		ID: messageInfo.ID,
+		SenderID:messageInfo.SenderID,
+		ChatID:messageInfo.ChatID,
+		Content:messageInfo.Content,
+	}
+}
+
 // func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
 // 	return db.UserInfo{
 // 		ID:          newInfo.ID,
