@@ -114,16 +114,16 @@ func GetChatMessagesHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	userID,_:=strconv.Atoi(userIDString)
-	isChatContact,err:=db.Mysql.IsAChatContact(userID,chatID)
+	userID, _ := strconv.Atoi(userIDString)
+	isChatContact, err := db.Mysql.IsAChatContact(userID, chatID)
 	if err != nil {
 		log.Printf("error in checking the existence of a contact in the chat:%v", err)
 		c.Status(400)
 		return
 	}
 	if !isChatContact {
-		c.JSON(http.StatusBadRequest,gin.H{
-			"error":"you are not allowed to see messages in this chat",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "you are not allowed to see messages in this chat",
 		})
 		return
 	}
@@ -148,16 +148,16 @@ func GetChatMembersHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	userID,_:=strconv.Atoi(userIDString)
-	isChatContact,err:=db.Mysql.IsAChatContact(userID,chatID)
+	userID, _ := strconv.Atoi(userIDString)
+	isChatContact, err := db.Mysql.IsAChatContact(userID, chatID)
 	if err != nil {
 		log.Printf("error in checking the existence of a contact in the chat:%v", err)
 		c.Status(400)
 		return
 	}
 	if !isChatContact {
-		c.JSON(http.StatusBadRequest,gin.H{
-			"error":"you are not allowed to see members in this chat",
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "you are not allowed to see members in this chat",
 		})
 		return
 	}

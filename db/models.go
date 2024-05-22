@@ -25,6 +25,7 @@ type Message struct {
 	SenderID int `gorm:"foreign_key"`
 	ChatID   int `gorm:"foreign_key"`
 	Content  string
+	Time     time.Time
 }
 
 // 0 equals male and 1 equals female

@@ -54,6 +54,7 @@ func ConvertMessage(messageInfo db.Message) Message{
 		SenderID:messageInfo.SenderID,
 		ChatID:messageInfo.ChatID,
 		Content:messageInfo.Content,
+		Time:messageInfo.Time,
 	}
 }
 

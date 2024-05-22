@@ -5,16 +5,18 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
 )
 
 type Message struct {
-	ID       int    `json:"id"`
-	SenderID int    `json:"senderID"`
-	ChatID   int    `json:"chatID"`
-	Content  string `json:"content"`
+	ID       int       `json:"id"`
+	SenderID int       `json:"senderID"`
+	ChatID   int       `json:"chatID"`
+	Content  string    `json:"content"`
+	Time     time.Time `json:"time"`
 }
 
 func DeleteMessageHandler(c *gin.Context) {
@@ -92,6 +94,7 @@ func SendMessageHandler(c *gin.Context) {
 		SenderID: senderID,
 		ChatID:   message.ChatID,
 		Content:  message.Content,
+		Time:     time.Now(),
 	}
 	isChatContact, err := db.Mysql.IsAChatContact(dbMessage.SenderID, dbMessage.ChatID)
 	if err != nil {
