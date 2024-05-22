@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -40,7 +41,7 @@ func (d *Database) NewChat(chatID string, chatName string, chatType int, users [
 func (d *Database) IsChatExist(users []string) (bool, error) {
 	hashID := users[0] + users[1]
 	var dbHashID string
-	result := d.db.Table("chats").Select("hash_id").Where("hash_id=?",hashID).Find(&dbHashID)
+	result := d.db.Table("chats").Select("hash_id").Where("hash_id=?", hashID).Find(&dbHashID)
 	if result.Error != nil {
 		return true, result.Error
 	}
@@ -95,4 +96,24 @@ func (d *Database) GetChatsList(userID string) ([]string, error) {
 		chatsName = append(chatsName, name)
 	}
 	return chatsName, nil
+}
+
+func (d *Database) IsAChatContact(userID int, chatID int) (bool, error) {
+	var dbChatID int
+	result := d.db.Table("chat_members").Select("chat_id").Where("chat_id=?", chatID).Find(&dbChatID)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	if dbChatID == 0 {
+		return false, errors.New("no record found with this chat ID")
+	}
+	var dbUserID int
+	result = d.db.Table("chat_members").Select("user_id").Where("chat_id=? AND user_id=?", chatID, userID).Find(&dbUserID)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	if dbUserID == 0 {
+		return false, nil
+	}
+	return true, nil
 }

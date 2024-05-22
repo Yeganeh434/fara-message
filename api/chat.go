@@ -108,6 +108,25 @@ func NewGroupChatHandler(c *gin.Context) {
 func GetChatMessagesHandler(c *gin.Context) {
 	chatIDString := c.Param("id")
 	chatID, _ := strconv.Atoi(chatIDString)
+	userIDString, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
+		c.Status(400)
+		return
+	}
+	userID,_:=strconv.Atoi(userIDString)
+	isChatContact,err:=db.Mysql.IsAChatContact(userID,chatID)
+	if err != nil {
+		log.Printf("error in checking the existence of a contact in the chat:%v", err)
+		c.Status(400)
+		return
+	}
+	if !isChatContact {
+		c.JSON(http.StatusBadRequest,gin.H{
+			"error":"you are not allowed to see messages in this chat",
+		})
+		return
+	}
 	messages, err := db.Mysql.GetChatMessages(chatID)
 	if err != nil {
 		log.Print(err)

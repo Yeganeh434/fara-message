@@ -19,9 +19,9 @@ type Message struct {
 
 func DeleteMessageHandler(c *gin.Context) {
 	messageIDString := c.Param("id")
-	messageID,err:= strconv.Atoi(messageIDString)
-	if err!=nil {
-		log.Printf("error converting message Id to int:%v",err)
+	messageID, err := strconv.Atoi(messageIDString)
+	if err != nil {
+		log.Printf("error converting message Id to int:%v", err)
 		c.Status(400)
 		return
 	}
@@ -33,9 +33,9 @@ func DeleteMessageHandler(c *gin.Context) {
 	}
 	userID, _ := strconv.Atoi(userIDString)
 	var message db.Message
-	message,err=db.Mysql.FindMessageInfo(messageID)
-	if err !=nil {
-		log.Printf("error in finding message information:%v",err)
+	message, err = db.Mysql.FindMessageInfo(messageID)
+	if err != nil {
+		log.Printf("error in finding message information:%v", err)
 		c.Status(400)
 		return
 	}
@@ -48,7 +48,7 @@ func DeleteMessageHandler(c *gin.Context) {
 	// }
 
 	//any member of the chat can delete any message from the chat
-	isChatContact,err:=db.Mysql.IsChatContact(userID,message.ChatID)
+	isChatContact, err := db.Mysql.IsAChatContact(userID, message.ChatID)
 	if err != nil {
 		log.Printf("error in checking the existence of a contact in the chat:%v", err)
 		c.Status(400)
@@ -93,14 +93,13 @@ func SendMessageHandler(c *gin.Context) {
 		ChatID:   message.ChatID,
 		Content:  message.Content,
 	}
-	isChatContact, err := db.Mysql.IsChatContact(dbMessage.SenderID, dbMessage.ChatID)
+	isChatContact, err := db.Mysql.IsAChatContact(dbMessage.SenderID, dbMessage.ChatID)
 	if err != nil {
 		log.Printf("error in checking the existence of a contact in the chat:%v", err)
 		c.Status(400)
 		return
 	}
 	if !isChatContact {
-		fmt.Println(message.SenderID)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "you are not allowed to send messages in this chat",
 		})

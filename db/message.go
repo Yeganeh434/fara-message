@@ -25,19 +25,9 @@ func (d *Database) FindMessageInfo(messageID int) (Message, error) {
 		return message, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return message, errors.New("no record found with this id")
+		return message, errors.New("no record found with this message ID")
 	}
 	return message, nil
 }
 
-func (d *Database) IsChatContact(userID int, chatID int) (bool, error) {
-	var dbChatID int
-	result := d.db.Table("chat_members").Select("chat_id").Where("chat_id=? AND user_id=?", chatID, userID).Find(&dbChatID)
-	if result.Error != nil {
-		return false, result.Error
-	}
-	if dbChatID == 0 {
-		return false, nil
-	}
-	return true, nil
-}
+
