@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -57,7 +56,6 @@ func DeleteMessageHandler(c *gin.Context) {
 		return
 	}
 	if !isChatContact {
-		fmt.Println(message.SenderID)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "you are not allowed to delete this message",
 		})

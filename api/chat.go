@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,6 +16,12 @@ type GroupChatRequest struct {
 }
 type DirectChatRequest struct {
 	User string `json:"user"`
+}
+
+// struct name!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+type NewMemberInfo struct {
+	ChatID      int `json:"chatID"`
+	NewMemberID int `json:"newMemberID"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {
@@ -105,6 +112,57 @@ func NewGroupChatHandler(c *gin.Context) {
 	})
 }
 
+func AddMemberToGroupHandler(c *gin.Context) {
+	var memberInfo NewMemberInfo
+	err := c.BindJSON(&memberInfo)
+	if err != nil {
+		log.Printf("error binding JSON:%v", err)
+		c.Status(400)
+		return
+	}
+	userIDString, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
+		c.Status(400)
+		return
+	}
+	userID, _ := strconv.Atoi(userIDString)
+	isChatContact, err := db.Mysql.IsAChatContact(userID, memberInfo.ChatID)
+	if err != nil {
+		log.Printf("error in checking the existence of a contact in the chat:%v", err)
+		c.Status(400)
+		return
+	}
+	if !isChatContact {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "you are not allowed to add members to this group",
+		})
+		return
+	}
+	isChatContact, err = db.Mysql.IsAChatContact(memberInfo.NewMemberID, memberInfo.ChatID)
+	if err != nil {
+		log.Printf("error in checking the existence of a contact in the chat:%v", err)
+		c.Status(400)
+		return
+	}
+	if isChatContact {
+		fmt.Println(memberInfo.ChatID,"!!!!!!!!!!!!!!!!!!!!",memberInfo.NewMemberID)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "this user has already been added to the group",
+		})
+		return
+	}
+	err = db.Mysql.AddMemberToGroup(memberInfo.ChatID, memberInfo.NewMemberID)
+	if err != nil {
+		log.Printf("error add member to group:%v", err)
+		c.Status(400)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "new member has been successfully added to the group",
+	})
+}
+
 func GetChatMessagesHandler(c *gin.Context) {
 	chatIDString := c.Param("id")
 	chatID, _ := strconv.Atoi(chatIDString)
@@ -127,7 +185,7 @@ func GetChatMessagesHandler(c *gin.Context) {
 		})
 		return
 	}
-	messages, err := db.Mysql.GetChatMessages(userID,chatID)
+	messages, err := db.Mysql.GetChatMessages(userID, chatID)
 	if err != nil {
 		log.Print(err)
 		return

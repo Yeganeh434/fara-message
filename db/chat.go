@@ -33,8 +33,21 @@ func (d *Database) NewChat(chatID string, chatName string, chatType int, users [
 			return err
 		}
 	}
-
+	//handle error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	d.db.Create(&chat)
+	return nil
+}
+
+func (d *Database) AddMemberToGroup(chatID int, newMemberID int) error {
+	chatMember := ChatMember{
+		ChatID:     chatID,
+		UserID:     newMemberID,
+		JoinedTime: time.Now(),
+	}
+	result := d.db.Create(&chatMember)
+	if result.Error != nil {
+		return result.Error
+	}
 	return nil
 }
 
