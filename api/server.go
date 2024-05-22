@@ -21,7 +21,7 @@ func RunWebServer(port int) error {
 	router.DELETE("/user/contact/:contactID",DeleteContactHandler)
 	router.GET("/user/contact",GetContactHandler)
 	router.POST("/send/message", SendMessageHandler)
-	router.DELETE("/delete/message", DeleteMessageHandler)
+	router.DELETE("/delete/message/:id", DeleteMessageHandler)
 	router.POST("/new_direct_chat", NewDirectChatHandler)
 	router.POST("/new_group_chat", NewGroupChatHandler)
 	router.GET("/chat/messages/:id", GetChatMessagesHandler)

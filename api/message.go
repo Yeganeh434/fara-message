@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -17,11 +18,50 @@ type Message struct {
 }
 
 func DeleteMessageHandler(c *gin.Context) {
-	var message Message
-	if err := c.BindJSON(&message); err != nil {
-		log.Printf("error binding JSON:%v", err)
+	messageIDString := c.Param("id")
+	messageID,err:= strconv.Atoi(messageIDString)
+	if err!=nil {
+		log.Printf("error converting message Id to int:%v",err)
+		c.Status(400)
+		return
 	}
-	err := db.Mysql.DeleteMessage(message.ID)
+	userIDString, err := GetUserID(c.GetHeader("Authorization"))
+	if err != nil {
+		log.Printf("error get user ID:%v", err)
+		c.Status(400)
+		return
+	}
+	userID, _ := strconv.Atoi(userIDString)
+	var message db.Message
+	message,err=db.Mysql.FindMessageInfo(messageID)
+	if err !=nil {
+		log.Printf("error in finding message information:%v",err)
+		c.Status(400)
+		return
+	}
+
+	//anyone can just delete their own message
+	// if message.SenderID!=userID {
+	// 	c.JSON(http.StatusBadRequest,gin.H{
+	// 		"error":"you are not allowed to delete this message",
+	// 	})
+	// }
+
+	//any member of the chat can delete any message from the chat
+	isChatContact,err:=db.Mysql.IsChatContact(userID,message.ChatID)
+	if err != nil {
+		log.Printf("error in checking the existence of a contact in the chat:%v", err)
+		c.Status(400)
+		return
+	}
+	if !isChatContact {
+		fmt.Println(message.SenderID)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "you are not allowed to delete this message",
+		})
+		return
+	}
+	err = db.Mysql.DeleteMessage(message)
 	if err != nil {
 		log.Printf("error:%v", err)
 		c.Status(400)
@@ -52,6 +92,19 @@ func SendMessageHandler(c *gin.Context) {
 		SenderID: senderID,
 		ChatID:   message.ChatID,
 		Content:  message.Content,
+	}
+	isChatContact, err := db.Mysql.IsChatContact(dbMessage.SenderID, dbMessage.ChatID)
+	if err != nil {
+		log.Printf("error in checking the existence of a contact in the chat:%v", err)
+		c.Status(400)
+		return
+	}
+	if !isChatContact {
+		fmt.Println(message.SenderID)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "you are not allowed to send messages in this chat",
+		})
+		return
 	}
 	err = db.Mysql.SendMessage(dbMessage)
 	if err != nil {
