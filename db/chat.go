@@ -51,9 +51,14 @@ func (d *Database) IsChatExist(users []string) (bool, error) {
 	return false, nil
 }
 
-func (d *Database) GetChatMessages(ChatID int) ([]Message, error) {
+func (d *Database) GetChatMessages(userID int, chatID int) ([]Message, error) {
 	var messages []Message
-	if err := d.db.Where("chat_id = ?", ChatID).Find(&messages).Error; err != nil {
+	var joinedTime time.Time
+	result := d.db.Table("chat_members").Select("joined_time").Where("user_id=? AND chat_id=?", userID, chatID).Find(&joinedTime)
+	if result.Error != nil {
+		return messages, result.Error
+	}
+	if err := d.db.Where("chat_id = ? AND Time > ?", chatID, joinedTime).Find(&messages).Error; err != nil {
 		return nil, fmt.Errorf("no  message found for chat %w", err)
 	}
 	return messages, nil

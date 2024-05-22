@@ -127,7 +127,7 @@ func GetChatMessagesHandler(c *gin.Context) {
 		})
 		return
 	}
-	messages, err := db.Mysql.GetChatMessages(chatID)
+	messages, err := db.Mysql.GetChatMessages(userID,chatID)
 	if err != nil {
 		log.Print(err)
 		return
