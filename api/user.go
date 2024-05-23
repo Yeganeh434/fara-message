@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
@@ -81,6 +82,13 @@ func UpdateUserHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+	err = validateNewInfo(userID, newInfo)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"failed to validate user": err.Error(),
+		})
+		return
+	}
 	dbUserInfo := ConvertUpdateUser(newInfo)
 	err = db.Mysql.UpdateUser(userID, dbUserInfo)
 	if err != nil {
@@ -91,6 +99,37 @@ func UpdateUserHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "user updated successfully",
 	})
+}
+
+func validateNewInfo(userID string, newInfo UpdateUser) error {
+	user, err := db.Mysql.ReadUser(userID)
+	if err != nil {
+		return err
+	}
+	//if the user wants their previous username, don't check for username availability
+	if user.Username != newInfo.Username {
+		isUsernameAvailable, err := db.Mysql.IsUsernameAvailable(newInfo.Username)
+		if err != nil {
+			return err
+		}
+		if !isUsernameAvailable {
+			return errors.New("this username is not available")
+		}
+	}
+
+	if newInfo.Email != "" {
+		if user.Email != newInfo.Email {
+			isEmailExist, err := db.Mysql.IsEmailExist(newInfo.Email)
+			if err != nil {
+				return err
+			}
+			if isEmailExist {
+				return errors.New("an account has already been created with this email")
+			}
+		}
+	}
+
+	return nil
 }
 
 func DeleteUserHandler(c *gin.Context) {
@@ -110,7 +149,6 @@ func DeleteUserHandler(c *gin.Context) {
 		"message": "user deleted successfully",
 	})
 }
-
 
 func AddContactHandler(c *gin.Context) {
 	userID, err := GetUserID(c.GetHeader("Authorization"))

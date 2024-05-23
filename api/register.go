@@ -66,6 +66,8 @@ func RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, userToken)
 }
 
+
+
 // other validation fields will be added...
 func validateUser(form RegisterForm) error {
 	if form.Password != form.ConfirmPassword {
@@ -84,6 +86,16 @@ func validateUser(form RegisterForm) error {
 		return errors.New("this username is not available")
 	}
 
+	if form.Email!="" {
+		isEmailExist,err:=db.Mysql.IsEmailExist(form.Email)
+		if err!=nil{
+			return err
+		}
+		if isEmailExist {
+			return errors.New("an account has already been created with this email")
+		}
+	}
+	
 	return nil
 }
 

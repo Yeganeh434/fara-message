@@ -144,8 +144,8 @@ func (d *Database) IsOTPCorrect(otp int, email string) (bool, error) {
 }
 
 func (d *Database) DeleteOTP(otp int, email string) error {
-	result:=d.db.Where("otp=? AND email=?",otp,email).Delete(&OTP{})
-	if result.Error!=nil {
+	result := d.db.Where("otp=? AND email=?", otp, email).Delete(&OTP{})
+	if result.Error != nil {
 		return result.Error
 	}
 	return nil
