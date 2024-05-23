@@ -37,6 +37,7 @@ type User struct {
 	Password    string
 	Gender      int
 	DateOfBirth time.Time
+	Email       string
 	CreatedTime time.Time
 	DeletedAt   sql.NullTime
 }
@@ -68,3 +69,9 @@ type Contacts struct {
 // 		CreatedTime: user.CreatedTime,
 // 	}
 // }
+
+type OTP struct {
+	ID    int `gorm:"primary_key"`
+	OTP   int
+	Email string `gorm:"foreignkey:Email"`
+}

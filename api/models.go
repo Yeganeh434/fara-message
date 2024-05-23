@@ -30,6 +30,7 @@ type UserInfo struct {
 	LastName    string    `json:"lastname"`
 	Gender      int       `json:"gender"`
 	DateOfBirth time.Time `json:"dateOfBirth"`
+	Email       string    `json:"email"`
 	CreatedTime time.Time `json:"createdTime"`
 }
 
@@ -41,6 +42,7 @@ type User struct {
 	Password    string    `json:"password"`
 	Gender      int       `json:"gender"`
 	DateOfBirth time.Time `json:"dateOfBirth"`
+	Email       string    `json:"email"`
 	CreatedTime time.Time `json:"createdTime"`
 }
 
@@ -48,13 +50,13 @@ type ContactsResponse struct {
 	Contacts []AnotherUserInfo `json:"contacts"`
 }
 
-func ConvertMessage(messageInfo db.Message) Message{
+func ConvertMessage(messageInfo db.Message) Message {
 	return Message{
-		ID: messageInfo.ID,
-		SenderID:messageInfo.SenderID,
-		ChatID:messageInfo.ChatID,
-		Content:messageInfo.Content,
-		Time:messageInfo.Time,
+		ID:       messageInfo.ID,
+		SenderID: messageInfo.SenderID,
+		ChatID:   messageInfo.ChatID,
+		Content:  messageInfo.Content,
+		Time:     messageInfo.Time,
 	}
 }
 
@@ -78,18 +80,20 @@ func ConvertdbUser(newInfo db.User) UserInfo {
 		LastName:    newInfo.LastName,
 		Gender:      newInfo.Gender,
 		DateOfBirth: newInfo.DateOfBirth,
+		Email:       newInfo.Email,
 		CreatedTime: newInfo.CreatedTime,
 	}
 }
 
 func ConvertUpdateUser(newInfo UpdateUser) db.User {
 	layout := "2006-01-02"
-	date, _ := time.Parse(layout, newInfo.DateOfBirth)    //handle error!!!!!!!!!!!!!!!
+	date, _ := time.Parse(layout, newInfo.DateOfBirth) //handle error!!!!!!!!!!!!!!!
 	return db.User{
 		Username:    newInfo.Username,
 		FirstName:   newInfo.FirstName,
 		LastName:    newInfo.LastName,
 		Gender:      newInfo.Gender,
 		DateOfBirth: date,
+		Email:       newInfo.Email,
 	}
 }

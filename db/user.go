@@ -27,7 +27,7 @@ func (d *Database) ReadUser(ID string) (User, error) {
 }
 
 func (d *Database) UpdateUser(ID string, newInfo User) error {
-	result := d.db.Model(&User{}).Where("ID=?", ID).Updates(User{Username: newInfo.Username, FirstName: newInfo.FirstName, LastName: newInfo.LastName, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth})
+	result := d.db.Model(&User{}).Where("ID=?", ID).Updates(User{Username: newInfo.Username, FirstName: newInfo.FirstName, LastName: newInfo.LastName, Gender: newInfo.Gender, DateOfBirth: newInfo.DateOfBirth, Email: newInfo.Email})
 	if result.Error != nil {
 		return result.Error
 	}
@@ -61,16 +61,16 @@ func (d *Database) AddContact(id int, userID int, contactID int) error {
 	return nil
 }
 
-func (d *Database) IsContactExist(userID int, contactID int)(bool ,error){
+func (d *Database) IsContactExist(userID int, contactID int) (bool, error) {
 	var contact Contacts
-	result:=d.db.Table("contacts").Select("contacts.*").Where("user_id=? AND contact_id=?",userID,contactID).Find(&contact)
+	result := d.db.Table("contacts").Select("contacts.*").Where("user_id=? AND contact_id=?", userID, contactID).Find(&contact)
 	if result.Error != nil {
-		return true,result.Error
+		return true, result.Error
 	}
-	if contact.ID==0 {
-		return false,nil
+	if contact.ID == 0 {
+		return false, nil
 	}
-	return true,nil
+	return true, nil
 }
 
 func (d *Database) DeleteContact(userID int, contactID int) error {
@@ -91,22 +91,54 @@ func (d *Database) GetContact(userID int) ([]User, error) {
 	return contacts, nil
 }
 
-func (d *Database) ChangePassword(ID string, newPassword string) error {
-	result := d.db.Model(&User{}).Where("ID=?", ID).Update("Password", newPassword)
+func (d *Database) ChangePassword(email string, newPassword string) error {
+	result := d.db.Model(&User{}).Where("email=?", email).Update("Password", newPassword)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (d *Database) IsUsernameAvailable(username string) (bool,error){
+func (d *Database) IsUsernameAvailable(username string) (bool, error) {
 	var dbUsername string
-	result:=d.db.Table("users").Select("users.username").Where("username=?",username).Find(&dbUsername)
-	if result.Error!=nil {
-		return false,result.Error
+	result := d.db.Table("users").Select("users.username").Where("username=?", username).Find(&dbUsername)
+	if result.Error != nil {
+		return false, result.Error
 	}
-	if len(dbUsername)==0 {
-		return true,nil
+	if len(dbUsername) == 0 {
+		return true, nil
 	}
-	return false,nil
+	return false, nil
+}
+
+func (d *Database) IsEmailExist(email string) (bool, error) {
+	var userEmail string
+	result := d.db.Table("users").Select("users.email").Where("email=?", email).Find(&userEmail)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	if userEmail == "" {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (d *Database) SaveOTPInDB(otp OTP) error {
+	result := d.db.Create(&otp)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+func (d *Database) IsOTPCorrect(otp int, email string) (bool, error) {
+	var OTPInfo OTP
+	result := d.db.Table("otps").Select("otps.*").Where("otp=? AND email=?", otp, email).Find(&OTPInfo)
+	if result.Error != nil {
+		return false, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return false, nil
+	}
+	return true, nil
 }

@@ -24,6 +24,7 @@ type UpdateUser struct {
 	LastName    string `json:"lastname"`
 	Gender      int    `json:"gender"`
 	DateOfBirth string `json:"dateOfBirth"`
+	Email       string `json:"email"`
 }
 
 // func CreateUserHandler(c *gin.Context) {
@@ -131,43 +132,6 @@ func DeleteUserHandler(c *gin.Context) {
 	})
 }
 
-func changePasswordHandler(c *gin.Context) {
-	userID, err := GetUserID(c.GetHeader("Authorization"))
-	if err != nil {
-		log.Printf("error get user ID:%v", err)
-		c.Status(400)
-		return
-	}
-	var newPassword PasswordType
-	err = c.BindJSON(&newPassword)
-	if err != nil {
-		log.Printf("error binding JSON:%v", err)
-		c.Status(400)
-		return
-	}
-	if newPassword.Password != newPassword.ConfirmPassword {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "the password does not match the password confirmation",
-		})
-		return
-	}
-	if !IsStrongPassword(newPassword.Password) {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "your password must be at least 8 characters long and contain uppercase letter,lowercase letter,digit, and special character",
-		})
-		return
-	}
-	newPassword.Password = hash(newPassword.Password)
-	err = db.Mysql.ChangePassword(userID, newPassword.Password)
-	if err != nil {
-		log.Printf("error changing password:%v", err)
-		c.Status(400)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{
-		"message": "password change successfully",
-	})
-}
 
 func AddContactHandler(c *gin.Context) {
 	userID, err := GetUserID(c.GetHeader("Authorization"))
