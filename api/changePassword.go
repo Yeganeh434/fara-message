@@ -35,7 +35,7 @@ type EmailRequest struct {
 	Content    Content     `json:"Content"`
 }
 
-func GetOTP(c *gin.Context) {
+func GetOTPHandler(c *gin.Context) {
 	otp := GenerateOTP()
 	email := c.Param("email")
 	isEmailExist, err := db.Mysql.IsEmailExist(email)
@@ -48,6 +48,7 @@ func GetOTP(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "there is no user with this email",
 		})
+		return
 	}
 	emailRequest := EmailRequest{
 		Recipients: []Recipient{
@@ -148,6 +149,18 @@ func ChangePasswordHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+	isEmailExist, err := db.Mysql.IsEmailExist(newPasswordInfo.Email)
+	if err != nil {
+		log.Printf("error in checking the existence of email:%v", err)
+		c.Status(400)
+		return
+	}
+	if !isEmailExist {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "there is no user with this email",
+		})
+		return
+	}
 	isOTPCorrect, err := db.Mysql.IsOTPCorrect(newPasswordInfo.OTP, newPasswordInfo.Email)
 	if err != nil {
 		log.Printf("error checking whether OTP is correct:%v", err)
@@ -158,6 +171,7 @@ func ChangePasswordHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "the OTP you entered is not correct",
 		})
+		return
 	}
 
 	if newPasswordInfo.NewPassword != newPasswordInfo.ConfirmPassword {
@@ -179,6 +193,14 @@ func ChangePasswordHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
+
+	err=db.Mysql.DeleteOTP(newPasswordInfo.OTP,newPasswordInfo.Email)
+	if err!= nil {
+		log.Printf("error deleting OTP from database:%v", err)
+		c.Status(400)
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "password change successfully",
 	})

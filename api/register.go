@@ -20,6 +20,7 @@ type RegisterForm struct {
 	ConfirmPassword string `json:"confirmPassword"`
 	Gender          int    `json:"gender"`
 	DateOfBirth     string `json:"dateOfBirth"`
+	Email           string `json:"email"`
 }
 
 type tokenJSON struct {
@@ -103,6 +104,7 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 		Gender:      form.Gender,
 		DateOfBirth: convertTime,
 		CreatedTime: time.Now(),
+		Email:       form.Email,
 	}
 
 	return user, nil

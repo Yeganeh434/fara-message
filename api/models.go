@@ -60,18 +60,6 @@ func ConvertMessage(messageInfo db.Message) Message {
 	}
 }
 
-// func ConvertUserInfo(newInfo UserInfo) db.UserInfo {
-// 	return db.UserInfo{
-// 		ID:          newInfo.ID,
-// 		Username:    newInfo.Username,
-// 		FirstName:   newInfo.FirstName,
-// 		LastName:    newInfo.LastName,
-// 		Gender:      newInfo.Gender,
-// 		DateOfBirth: newInfo.DateOfBirth,
-// 		CreatedTime: newInfo.CreatedTime,
-// 	}
-// }
-
 func ConvertdbUser(newInfo db.User) UserInfo {
 	return UserInfo{
 		ID:          newInfo.ID,
