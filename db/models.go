@@ -49,7 +49,8 @@ type Contacts struct {
 }
 
 type OTP struct {
-	ID    int `gorm:"primary_key"`
-	OTP   int
-	Email string `gorm:"foreignkey:Email"`
+	ID             int `gorm:"primary_key"`
+	OTP            int
+	Email          string `gorm:"foreignkey:Email"`
+	ExpirationTime time.Time
 }

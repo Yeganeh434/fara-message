@@ -70,6 +70,14 @@ func RegisterHandler(c *gin.Context) {
 
 // other validation fields will be added...
 func validateUser(form RegisterForm) error {
+	if form.Username=="" || form.FirstName=="" ||form.LastName=="" ||  form.Password=="" ||form.DateOfBirth=="" ||form.Email=="" {
+		return errors.New("all fields must be filled")
+	}
+
+	if !(form.Gender==0 ||form.Gender==1) {
+		return errors.New("invalid gender")
+	}
+
 	if form.Password != form.ConfirmPassword {
 		return errors.New("password does not match")
 	}

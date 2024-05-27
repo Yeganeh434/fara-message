@@ -1,5 +1,7 @@
 package db
 
+import "time"
+
 func (d *Database) CreateUser(user User) error {
 	result := d.db.Create(&user)
 	if result.Error != nil {
@@ -131,16 +133,23 @@ func (d *Database) SaveOTPInDB(otp OTP) error {
 	return nil
 }
 
-func (d *Database) IsOTPCorrect(otp int, email string) (bool, error) {
+func (d *Database) GetOTP(email string) (int, error) {
 	var OTPInfo OTP
-	result := d.db.Table("otps").Select("otps.*").Where("otp=? AND email=?", otp, email).Find(&OTPInfo)
+	result := d.db.Table("otps").Select("otps.*").Where("email=?", email).Find(&OTPInfo)
 	if result.Error != nil {
-		return false, result.Error
+		return 0, result.Error
 	}
 	if result.RowsAffected == 0 {
-		return false, nil
+		return 0, nil
 	}
-	return true, nil
+	if OTPInfo.ExpirationTime.Before(time.Now()) {
+		err:=d.DeleteOTP(OTPInfo.OTP,OTPInfo.Email) 
+		if err!=nil {
+			return 0,err
+		}
+		return 0,nil
+	}
+	return OTPInfo.OTP, nil
 }
 
 func (d *Database) DeleteOTP(otp int, email string) error {

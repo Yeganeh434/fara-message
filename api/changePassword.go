@@ -3,11 +3,11 @@ package api
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/mhghw/fara-message/db"
@@ -36,7 +36,6 @@ type EmailRequest struct {
 }
 
 func GetOTPHandler(c *gin.Context) {
-	otp := GenerateOTP()
 	email := c.Param("email")
 	isEmailExist, err := db.Mysql.IsEmailExist(email)
 	if err != nil {
@@ -50,6 +49,23 @@ func GetOTPHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	isItThePreviousOTP := false
+	otpInt, err := db.Mysql.GetOTP(email)
+	if err != nil {
+		log.Printf("error getting OTP:%v", err)
+		c.Status(400)
+		return
+	}
+	var otp string
+	if otpInt == 0 {
+		otp = GenerateOTP()
+		otpInt, _ = strconv.Atoi(otp)
+	} else {
+		otp = strconv.Itoa(otpInt)
+		isItThePreviousOTP = true
+	}
+
 	emailRequest := EmailRequest{
 		Recipients: []Recipient{
 			{
@@ -95,31 +111,36 @@ func GetOTPHandler(c *gin.Context) {
 	}
 	defer resp.Body.Close()
 
-	responseBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reading response"})
-		return
-	}
+	// responseBody, err := ioutil.ReadAll(resp.Body)
+	// if err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reading response"})
+	// 	return
+	// }
 
 	//save otp in database
-	id, _ := strconv.Atoi(generateID())
-	IntOfOTP, _ := strconv.Atoi(otp)
-	otpInfo := db.OTP{
-		ID:    id,
-		OTP:   IntOfOTP,
-		Email: email,
-	}
-	err = db.Mysql.SaveOTPInDB(otpInfo)
-	if err != nil {
-		log.Printf("error in saving OTP in the database:%v", err)
-		c.Status(400)
-		return
+	if !isItThePreviousOTP {
+		id, _ := strconv.Atoi(generateID())
+		otpInfo := db.OTP{
+			ID:             id,
+			OTP:            otpInt,
+			Email:          email,
+			ExpirationTime: time.Now().Add(time.Minute * 15),
+		}
+		err = db.Mysql.SaveOTPInDB(otpInfo)
+		if err != nil {
+			log.Printf("error in saving OTP in the database:%v", err)
+			c.Status(400)
+			return
+		}
 	}
 
 	c.JSON(resp.StatusCode, gin.H{
-		"headers": resp.Header,
-		"body":    string(responseBody),
+		"message": "the email was sent successfully",
 	})
+	// c.JSON(resp.StatusCode, gin.H{
+	// 	"headers": resp.Header,
+	// 	"body":    string(responseBody),
+	// })
 }
 
 // change this func!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
@@ -161,15 +182,16 @@ func ChangePasswordHandler(c *gin.Context) {
 		})
 		return
 	}
-	isOTPCorrect, err := db.Mysql.IsOTPCorrect(newPasswordInfo.OTP, newPasswordInfo.Email)
+
+	otp, err := db.Mysql.GetOTP(newPasswordInfo.Email)
 	if err != nil {
-		log.Printf("error checking whether OTP is correct:%v", err)
+		log.Printf("error getting OTP:%v", err)
 		c.Status(400)
 		return
 	}
-	if !isOTPCorrect {
+	if otp == 0 || otp != newPasswordInfo.OTP {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "the OTP you entered is not correct",
+			"error": "the OTP you entered is not valide",
 		})
 		return
 	}
@@ -194,8 +216,8 @@ func ChangePasswordHandler(c *gin.Context) {
 		return
 	}
 
-	err=db.Mysql.DeleteOTP(newPasswordInfo.OTP,newPasswordInfo.Email)
-	if err!= nil {
+	err = db.Mysql.DeleteOTP(newPasswordInfo.OTP, newPasswordInfo.Email)
+	if err != nil {
 		log.Printf("error deleting OTP from database:%v", err)
 		c.Status(400)
 		return
