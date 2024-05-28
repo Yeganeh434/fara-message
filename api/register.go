@@ -86,6 +86,17 @@ func validateUser(form RegisterForm) error {
 		return errors.New("your password must be at least 8 characters long and contain uppercase letter,lowercase letter,digit, and special character")
 	}
 
+	if len(form.Username)<3 || len(form.Username)>20 {
+		return errors.New("username length should be between 3 and 20 characters")
+	}
+	spicificChar:="@#$%&*()+=!?,.<>/|~`\""
+	for _,usernameValue:=range form.Username{
+		for _,charsValue:=range spicificChar{
+			if usernameValue==charsValue {
+				return errors.New("username contains invalid characters")
+			} 
+		}
+	} 
 	isUsernameAvailable, err := db.Mysql.IsUsernameAvailable(form.Username)
 	if err != nil {
 		return err
@@ -94,14 +105,12 @@ func validateUser(form RegisterForm) error {
 		return errors.New("this username is not available")
 	}
 
-	if form.Email!="" {
-		isEmailExist,err:=db.Mysql.IsEmailExist(form.Email)
-		if err!=nil{
-			return err
-		}
-		if isEmailExist {
-			return errors.New("an account has already been created with this email")
-		}
+	isEmailExist,err:=db.Mysql.IsEmailExist(form.Email)
+	if err!=nil{
+		return err
+	}
+	if isEmailExist {
+		return errors.New("an account has already been created with this email")
 	}
 	
 	return nil

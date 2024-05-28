@@ -106,6 +106,26 @@ func validateNewInfo(userID string, newInfo UpdateUser) error {
 	if err != nil {
 		return err
 	}
+
+	if newInfo.Username=="" || newInfo.FirstName=="" ||newInfo.LastName=="" ||newInfo.DateOfBirth=="" ||newInfo.Email=="" {
+		return errors.New("all fields must be filled")
+	}
+
+	if !(newInfo.Gender==0 ||newInfo.Gender==1) {
+		return errors.New("invalid gender")
+	}
+
+	if len(newInfo.Username)<3 || len(newInfo.Username)>20 {
+		return errors.New("username length should be between 3 and 20 characters")
+	}
+	spicificChar:="@#$%&*()+=!?,.<>/|~`\""
+	for _,usernameValue:=range newInfo.Username{
+		for _,charsValue:=range spicificChar{
+			if usernameValue==charsValue {
+				return errors.New("username contains invalid characters")
+			} 
+		}
+	} 
 	//if the user wants their previous username, don't check for username availability
 	if user.Username != newInfo.Username {
 		isUsernameAvailable, err := db.Mysql.IsUsernameAvailable(newInfo.Username)
@@ -117,15 +137,13 @@ func validateNewInfo(userID string, newInfo UpdateUser) error {
 		}
 	}
 
-	if newInfo.Email != "" {
-		if user.Email != newInfo.Email {
-			isEmailExist, err := db.Mysql.IsEmailExist(newInfo.Email)
-			if err != nil {
-				return err
-			}
-			if isEmailExist {
-				return errors.New("an account has already been created with this email")
-			}
+	if user.Email != newInfo.Email {
+		isEmailExist, err := db.Mysql.IsEmailExist(newInfo.Email)
+		if err != nil {
+			return err
+		}
+		if isEmailExist {
+			return errors.New("an account has already been created with this email")
 		}
 	}
 
