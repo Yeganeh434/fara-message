@@ -145,6 +145,9 @@ func validateNewInfo(userID string, newInfo UpdateUser) error {
 		if isEmailExist {
 			return errors.New("an account has already been created with this email")
 		}
+		if !isValidEmail(newInfo.Email) {
+			return errors.New("invalid email")
+		}
 	}
 
 	return nil

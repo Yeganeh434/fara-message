@@ -66,15 +66,13 @@ func RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, userToken)
 }
 
-
-
 // other validation fields will be added...
 func validateUser(form RegisterForm) error {
-	if form.Username=="" || form.FirstName=="" ||form.LastName=="" ||  form.Password=="" ||form.DateOfBirth=="" ||form.Email=="" {
+	if form.Username == "" || form.FirstName == "" || form.LastName == "" || form.Password == "" || form.DateOfBirth == "" || form.Email == "" {
 		return errors.New("all fields must be filled")
 	}
 
-	if !(form.Gender==0 ||form.Gender==1) {
+	if !(form.Gender == 0 || form.Gender == 1) {
 		return errors.New("invalid gender")
 	}
 
@@ -86,17 +84,17 @@ func validateUser(form RegisterForm) error {
 		return errors.New("your password must be at least 8 characters long and contain uppercase letter,lowercase letter,digit, and special character")
 	}
 
-	if len(form.Username)<3 || len(form.Username)>20 {
+	if len(form.Username) < 3 || len(form.Username) > 20 {
 		return errors.New("username length should be between 3 and 20 characters")
 	}
-	spicificChar:="@#$%&*()+=!?,.<>/|~`\""
-	for _,usernameValue:=range form.Username{
-		for _,charsValue:=range spicificChar{
-			if usernameValue==charsValue {
+	spicificChar := "@#$%&*()+=!?,.<>/|~`\""
+	for _, usernameValue := range form.Username {
+		for _, charsValue := range spicificChar {
+			if usernameValue == charsValue {
 				return errors.New("username contains invalid characters")
-			} 
+			}
 		}
-	} 
+	}
 	isUsernameAvailable, err := db.Mysql.IsUsernameAvailable(form.Username)
 	if err != nil {
 		return err
@@ -105,14 +103,17 @@ func validateUser(form RegisterForm) error {
 		return errors.New("this username is not available")
 	}
 
-	isEmailExist,err:=db.Mysql.IsEmailExist(form.Email)
-	if err!=nil{
+	isEmailExist, err := db.Mysql.IsEmailExist(form.Email)
+	if err != nil {
 		return err
 	}
 	if isEmailExist {
 		return errors.New("an account has already been created with this email")
 	}
-	
+	if !isValidEmail(form.Email) {
+		return errors.New("invalid email")
+	}
+
 	return nil
 }
 
