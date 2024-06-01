@@ -11,7 +11,7 @@ type HTTPError struct {
 }
 
 type ChatResponse struct {
-	ID       int        `json:"chatId"`
+	ID       uint64        `json:"chatId"`
 	Name     string     `json:"chatName"`
 	Messages []Message  `json:"messages"`
 	Users    []UserInfo `json:"users"`
@@ -24,7 +24,7 @@ type AnotherUserInfo struct {
 }
 
 type UserInfo struct {
-	ID          string    `json:"id"`
+	ID          uint64    `json:"id"`
 	Username    string    `json:"username"`
 	FirstName   string    `json:"firstname"`
 	LastName    string    `json:"lastname"`
@@ -35,7 +35,7 @@ type UserInfo struct {
 }
 
 type User struct {
-	ID          string    `json:"id"`
+	ID          uint64    `json:"id"`
 	Username    string    `json:"username"`
 	FirstName   string    `json:"firstname"`
 	LastName    string    `json:"lastname"`

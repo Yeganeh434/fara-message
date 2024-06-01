@@ -11,9 +11,9 @@ import (
 )
 
 type Message struct {
-	ID       int       `json:"id"`
-	SenderID int       `json:"senderID"`
-	ChatID   int       `json:"chatID"`
+	ID       uint64      `json:"id"`
+	SenderID uint64       `json:"senderID"`
+	ChatID   uint64       `json:"chatID"`
 	Content  string    `json:"content"`
 	Time     time.Time `json:"time"`
 }
@@ -32,7 +32,7 @@ func DeleteMessageHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	userID, _ := strconv.Atoi(userIDString)
+	userID, _ := strconv.ParseUint(userIDString,10,64)
 	var message db.Message
 	message, err = db.Mysql.FindMessageInfo(messageID)
 	if err != nil {
@@ -85,8 +85,13 @@ func SendMessageHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	senderID, _ := strconv.Atoi(userID)
-	messageID, _ := strconv.Atoi(generateID())
+	senderID, _ := strconv.ParseUint(userID,10,64)
+	messageID, err := generateID()
+	if err != nil {
+		log.Printf("error in generating ID:%v", err)
+		c.Status(400)
+		return
+	}
 	dbMessage := db.Message{
 		ID:       messageID,
 		SenderID: senderID,

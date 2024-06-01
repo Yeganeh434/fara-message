@@ -49,7 +49,7 @@ func (d *Database) DeleteUser(ID string) error {
 	return nil
 }
 
-func (d *Database) AddContact(id int, userID int, contactID int) error {
+func (d *Database) AddContact(id uint64, userID uint64, contactID uint64) error {
 	var user User
 	result := d.db.First(&user, "ID=?", contactID)
 	if result.Error != nil {
@@ -63,7 +63,7 @@ func (d *Database) AddContact(id int, userID int, contactID int) error {
 	return nil
 }
 
-func (d *Database) IsContactExist(userID int, contactID int) (bool, error) {
+func (d *Database) IsContactExist(userID uint64, contactID uint64) (bool, error) {
 	var contact Contacts
 	result := d.db.Table("contacts").Select("contacts.*").Where("user_id=? AND contact_id=?", userID, contactID).Find(&contact)
 	if result.Error != nil {

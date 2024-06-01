@@ -3,18 +3,16 @@ package db
 import (
 	"errors"
 	"fmt"
-	"strconv"
 	"time"
 )
 
-func (d *Database) NewChat(chatID string, chatName string, chatType int, users []string) error {
-	hashID := ""
+func (d *Database) NewChat(chatID uint64, chatName string, chatType int, users []uint64) error {
+	var hashID uint64
 	if chatType == 0 {
 		hashID = users[0] + users[1]
 	}
-	id, _ := strconv.Atoi(chatID)
 	chat := Chat{
-		ID:          id,
+		ID:          chatID,
 		HashID:      hashID,
 		Name:        chatName,
 		Type:        chatType,
@@ -22,14 +20,12 @@ func (d *Database) NewChat(chatID string, chatName string, chatType int, users [
 	}
 	var chatMember ChatMember
 	for _, value := range users {
-		userID, _ := strconv.Atoi(value)
 		chatMember = ChatMember{
 			JoinedTime: time.Now(),
 			ChatID:     chat.ID,
-			UserID:     userID,
+			UserID:     value,
 		}
 		if err := d.db.Create(&chatMember).Error; err != nil {
-			// d.db.Delete(&chatMembers)
 			return err
 		}
 	}
@@ -38,7 +34,7 @@ func (d *Database) NewChat(chatID string, chatName string, chatType int, users [
 	return nil
 }
 
-func (d *Database) AddMemberToGroup(chatID int, newMemberID int) error {
+func (d *Database) AddMemberToGroup(chatID uint64, newMemberID uint64) error {
 	chatMember := ChatMember{
 		ChatID:     chatID,
 		UserID:     newMemberID,
@@ -51,9 +47,9 @@ func (d *Database) AddMemberToGroup(chatID int, newMemberID int) error {
 	return nil
 }
 
-func (d *Database) IsChatExist(users []string) (bool, error) {
+func (d *Database) IsChatExist(users []uint64) (bool, error) {
 	hashID := users[0] + users[1]
-	var dbHashID string
+	var dbHashID uint64
 	result := d.db.Table("chats").Select("hash_id").Where("hash_id=?", hashID).Find(&dbHashID)
 	if result.Error != nil {
 		return true, result.Error
@@ -64,7 +60,7 @@ func (d *Database) IsChatExist(users []string) (bool, error) {
 	return false, nil
 }
 
-func (d *Database) GetChatMessages(userID int, chatID int) ([]Message, error) {
+func (d *Database) GetChatMessages(userID uint64, chatID uint64) ([]Message, error) {
 	var messages []Message
 	var joinedTime time.Time
 	result := d.db.Table("chat_members").Select("joined_time").Where("user_id=? AND chat_id=?", userID, chatID).Find(&joinedTime)
@@ -77,7 +73,7 @@ func (d *Database) GetChatMessages(userID int, chatID int) ([]Message, error) {
 	return messages, nil
 }
 
-func (d *Database) GetChatMembers(chatID int) ([]User, error) {
+func (d *Database) GetChatMembers(chatID uint64) ([]User, error) {
 	var members []User
 	result := d.db.Table("chat_members").Select("users.*").Joins("JOIN users ON chat_members.user_id = users.ID").Where("chat_members.chat_id = ?", chatID).Find(&members)
 	if result.Error != nil {
@@ -116,7 +112,7 @@ func (d *Database) GetChatsList(userID string) ([]string, error) {
 	return chatsName, nil
 }
 
-func (d *Database) IsAChatContact(userID int, chatID int) (bool, error) {
+func (d *Database) IsAChatContact(userID uint64, chatID uint64) (bool, error) {
 	var dbChatID int
 	result := d.db.Table("chat_members").Select("chat_id").Where("chat_id=?", chatID).Find(&dbChatID)
 	if result.Error != nil {

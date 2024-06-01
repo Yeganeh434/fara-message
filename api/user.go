@@ -184,21 +184,21 @@ func AddContactHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	intOfUserID, err := strconv.Atoi(userID)
+	intOfUserID, err := strconv.ParseUint(userID,10,64)
 	if err != nil {
 		log.Printf("error converting to int:%v", err)
 		c.Status(400)
 		return
 	}
-	intOfContactID, err := strconv.Atoi(contactID)
+	intOfContactID, err := strconv.ParseUint(contactID,10,64)
 	if err != nil {
 		log.Printf("error converting to int:%v", err)
 		c.Status(400)
 		return
 	}
-	ID, err := strconv.Atoi(generateID())
+	id, err := generateID()
 	if err != nil {
-		log.Printf("error converting to int:%v", err)
+		log.Printf("error in generating ID:%v", err)
 		c.Status(400)
 		return
 	}
@@ -214,7 +214,7 @@ func AddContactHandler(c *gin.Context) {
 		})
 		return
 	}
-	err = db.Mysql.AddContact(ID, intOfUserID, intOfContactID)
+	err = db.Mysql.AddContact(id, intOfUserID, intOfContactID)
 	if err != nil {
 		log.Printf("error add contact to database:%v", err)
 		c.Status(400)

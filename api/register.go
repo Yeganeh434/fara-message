@@ -3,7 +3,6 @@ package api
 import (
 	// "encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -121,12 +120,15 @@ func convertRegisterFormToUser(form RegisterForm) (db.User, error) {
 	layout := "2006-01-02"
 	convertTime, err := time.Parse(layout, form.DateOfBirth)
 	if err != nil {
-		return db.User{}, fmt.Errorf("failed to parse date %w", err)
+		return db.User{}, err
 	}
 
-	generatedID := generateID()
+	id, err := generateID()
+	if err != nil {
+		return db.User{}, err
+	}
 	user := db.User{
-		ID:          generatedID,
+		ID:          id,
 		Username:    form.Username,
 		FirstName:   form.FirstName,
 		LastName:    form.LastName,

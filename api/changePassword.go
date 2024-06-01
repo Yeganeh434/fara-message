@@ -119,7 +119,12 @@ func GetOTPHandler(c *gin.Context) {
 
 	//save otp in database
 	if !isItThePreviousOTP {
-		id, _ := strconv.Atoi(generateID())
+		id, err := generateID()
+		if err != nil {
+			log.Printf("error in generating ID:%v", err)
+			c.Status(400)
+			return
+		}
 		otpInfo := db.OTP{
 			ID:             id,
 			OTP:            otpInt,

@@ -20,8 +20,8 @@ type DirectChatRequest struct {
 
 // struct name!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 type NewMemberInfo struct {
-	ChatID      int `json:"chatID"`
-	NewMemberID int `json:"newMemberID"`
+	ChatID      uint64 `json:"chatID"`
+	NewMemberID uint64 `json:"newMemberID"`
 }
 
 func NewDirectChatHandler(c *gin.Context) {
@@ -46,13 +46,12 @@ func NewDirectChatHandler(c *gin.Context) {
 		return
 	}
 
-	var users []string
-	intOfUser1, _ := strconv.Atoi(user1)
-	intOfUser2, _ := strconv.Atoi(user2.ID)
-	if intOfUser1 < intOfUser2 {
-		users = append(users, user1, user2.ID)
+	var users []uint64
+	intOfUser1, _ := strconv.ParseUint(user1, 10, 64)
+	if intOfUser1 < user2.ID {
+		users = append(users, intOfUser1, user2.ID)
 	} else {
-		users = append(users, user2.ID, user1)
+		users = append(users, user2.ID, intOfUser1)
 	}
 	isChatExist, err := db.Mysql.IsChatExist(users)
 	if err != nil {
@@ -66,7 +65,13 @@ func NewDirectChatHandler(c *gin.Context) {
 		})
 		return
 	}
-	if err := db.Mysql.NewChat(generateID(), "", 0, users); err != nil {
+	chatID, err := generateID()
+	if err != nil {
+		log.Printf("error in generating ID:%v", err)
+		c.Status(400)
+		return
+	}
+	if err := db.Mysql.NewChat(chatID, "", 0, users); err != nil {
 		log.Print("failed to create chat, ", err)
 		c.Status(400)
 		return
@@ -84,8 +89,9 @@ func NewGroupChatHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	var users []string
-	users = append(users, user1)
+	var users []uint64
+	intOfUser1, _ := strconv.ParseUint(user1, 10, 64)
+	users = append(users, intOfUser1)
 
 	var requestBody GroupChatRequest
 	err = c.BindJSON(&requestBody)
@@ -102,8 +108,15 @@ func NewGroupChatHandler(c *gin.Context) {
 		users = append(users, user.ID)
 	}
 
-	if err := db.Mysql.NewChat(generateID(), requestBody.ChatName, 1, users); err != nil {
+	chatID, err := generateID()
+	if err != nil {
+		log.Printf("error in generating ID:%v", err)
+		c.Status(400)
+		return
+	}
+	if err := db.Mysql.NewChat(chatID, requestBody.ChatName, 1, users); err != nil {
 		log.Printf("failed to create chat: %v", err)
+		c.Status(400)
 		return
 	}
 
@@ -126,7 +139,7 @@ func AddMemberToGroupHandler(c *gin.Context) {
 		c.Status(400)
 		return
 	}
-	userID, _ := strconv.Atoi(userIDString)
+	userID, _ := strconv.ParseUint(userIDString,10,64)
 	isChatContact, err := db.Mysql.IsAChatContact(userID, memberInfo.ChatID)
 	if err != nil {
 		log.Printf("error in checking the existence of a contact in the chat:%v", err)
@@ -146,7 +159,7 @@ func AddMemberToGroupHandler(c *gin.Context) {
 		return
 	}
 	if isChatContact {
-		fmt.Println(memberInfo.ChatID,"!!!!!!!!!!!!!!!!!!!!",memberInfo.NewMemberID)
+		fmt.Println(memberInfo.ChatID, "!!!!!!!!!!!!!!!!!!!!", memberInfo.NewMemberID)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "this user has already been added to the group",
 		})
@@ -165,14 +178,14 @@ func AddMemberToGroupHandler(c *gin.Context) {
 
 func GetChatMessagesHandler(c *gin.Context) {
 	chatIDString := c.Param("id")
-	chatID, _ := strconv.Atoi(chatIDString)
+	chatID, _ := strconv.ParseUint(chatIDString,10,64)
 	userIDString, err := GetUserID(c.GetHeader("Authorization"))
 	if err != nil {
 		log.Printf("error get user ID:%v", err)
 		c.Status(400)
 		return
 	}
-	userID, _ := strconv.Atoi(userIDString)
+	userID, _ := strconv.ParseUint(userIDString,10,64)
 	isChatContact, err := db.Mysql.IsAChatContact(userID, chatID)
 	if err != nil {
 		log.Printf("error in checking the existence of a contact in the chat:%v", err)
@@ -199,14 +212,14 @@ func GetChatMessagesHandler(c *gin.Context) {
 
 func GetChatMembersHandler(c *gin.Context) {
 	chatIDString := c.Param("id")
-	chatID, _ := strconv.Atoi(chatIDString)
+	chatID, _ := strconv.ParseUint(chatIDString,10,64)
 	userIDString, err := GetUserID(c.GetHeader("Authorization"))
 	if err != nil {
 		log.Printf("error get user ID:%v", err)
 		c.Status(400)
 		return
 	}
-	userID, _ := strconv.Atoi(userIDString)
+	userID, _ := strconv.ParseUint(userIDString,10,64)
 	isChatContact, err := db.Mysql.IsAChatContact(userID, chatID)
 	if err != nil {
 		log.Printf("error in checking the existence of a contact in the chat:%v", err)

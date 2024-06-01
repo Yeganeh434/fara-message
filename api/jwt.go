@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,9 +17,10 @@ const (
 	TokenUserID     = "user_id"
 )
 
-func CreateJWTToken(userID string) (string, error) {
+func CreateJWTToken(userID uint64) (string, error) {
+	userIDString:=strconv.FormatUint(userID,10)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		TokenUserID:     userID,
+		TokenUserID:     userIDString,
 		TokenExpireTime: time.Now().Add(time.Hour * 24).Unix(),
 	})
 	tokenString, err := token.SignedString(secretKey)

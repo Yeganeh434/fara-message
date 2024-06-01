@@ -5,13 +5,14 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"math/rand"
+	"log"
 	"regexp"
 	"strings"
 	"time"
 	"unicode"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/sony/sonyflake"
 )
 
 func hash(input string) string {
@@ -22,16 +23,16 @@ func hash(input string) string {
 	return hashedString
 }
 
-func generateID() string {
-	const charset = "0123456789"
-	rand.NewSource(10)
-	id := make([]byte, 5)
-	for idx := range id {
-		id[idx] = charset[rand.Intn(len(charset))]
-	}
+// func generateID() string {
+// 	const charset = "0123456789"
+// 	rand.NewSource(10)
+// 	id := make([]byte, 5)
+// 	for idx := range id {
+// 		id[idx] = charset[rand.Intn(len(charset))]
+// 	}
 
-	return string(id)
-}
+// 	return string(id)
+// }
 
 func GetUserIDFromToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
@@ -128,4 +129,23 @@ func IsStrongPassword(password string) bool {
 func isValidEmail(email string) bool {
 	var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(email)
+}
+
+var flake *sonyflake.Sonyflake
+func init() {
+	setting := sonyflake.Settings{
+		StartTime: time.Now(),
+	}
+	flake = sonyflake.NewSonyflake(setting)
+	if flake == nil {
+		log.Printf("sonyflake not created")
+		return
+	}
+}
+func generateID() (uint64, error) {
+	id, err := flake.NextID()
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
