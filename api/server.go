@@ -12,7 +12,7 @@ func RunWebServer(port int) error {
 	router.POST("/user/register", RegisterHandler)
 	router.GET("/user/get_otp/:email", GetOTPHandler)
 	router.POST("/user/change_password", ChangePasswordHandler)
-	router.POST("/login", authenticateUser)
+	router.POST("/login", authenticateUser)	
 	router.Use(AuthMiddlewareHandler)
 	router.POST("/user/read", ReadUserHandler)
 	router.POST("/user/update", UpdateUserHandler)

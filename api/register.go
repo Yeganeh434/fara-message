@@ -51,7 +51,6 @@ func RegisterHandler(c *gin.Context) {
 	}
 
 	token, err := CreateJWTToken(user.ID)
-
 	if err != nil {
 		log.Print("failed to create token")
 		c.Status(400)
@@ -61,11 +60,16 @@ func RegisterHandler(c *gin.Context) {
 		Token: token,
 	}
 
-	db.Mysql.CreateUser(user)
+	err=db.Mysql.CreateUser(user)
+	if err!=nil {
+		log.Print("failed to create user")
+		c.Status(400)
+		return
+	}
+
 	c.JSON(http.StatusOK, userToken)
 }
 
-// other validation fields will be added...
 func validateUser(form RegisterForm) error {
 	if form.Username == "" || form.FirstName == "" || form.LastName == "" || form.Password == "" || form.DateOfBirth == "" || form.Email == "" {
 		return errors.New("all fields must be filled")

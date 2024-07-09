@@ -150,7 +150,7 @@ func GetOTPHandler(c *gin.Context) {
 
 // change this func!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 func GenerateOTP() string {
-	const charset = "0123456789"
+	const charset = "123456789"
 	rand.NewSource(10)
 	id := make([]byte, 5)
 	for idx := range id {
