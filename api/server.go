@@ -9,6 +9,10 @@ import (
 func RunWebServer(port int) error {
 	addr := fmt.Sprintf(":%d", port)
 	router := gin.New()
+
+	hub := NewHub()
+	go hub.Run()
+
 	router.POST("/user/register", RegisterHandler)
 	router.GET("/user/get_otp/:email", GetOTPHandler)
 	router.POST("/user/change_password", ChangePasswordHandler)
@@ -28,6 +32,11 @@ func RunWebServer(port int) error {
 	router.GET("/chat/messages/:id", GetChatMessagesHandler)
 	router.GET("/user/chat/members/:id", GetChatMembersHandler)
 	router.GET("/user/chat/list", GetChatsListHandler)
+
+	router.GET("/user/ws/:chatID", func(c *gin.Context) {
+		ServeWs(hub, c)
+	})
+
 	err := router.Run(addr)
 	return err
 }
