@@ -3,12 +3,20 @@ package api
 import (
 	"errors"
 	"log"
+	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/mhghw/fara-message/db"
+)
+
+const (
+	maxMessageSize = 512
+	pongWait       = 60 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
+	writeWait      = 10 * time.Second
 )
 
 type Hub struct {
@@ -20,12 +28,12 @@ type Hub struct {
 }
 
 type Client struct {
-	userID  uint64 /////bebin mishe db ro bardasht
+	userID  uint64
 	chatID  uint64
 	hub     *Hub
 	conn    *websocket.Conn
-	send    chan db.Message /////bebin mishe db ro bardasht
-	receive chan db.Message /////bebin mishe db ro bardasht
+	send    chan db.Message
+	receive chan db.Message
 }
 
 func NewHub() *Hub {
@@ -41,21 +49,18 @@ func NewHub() *Hub {
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		return true
+	},
 }
 
 func (h *Hub) Run() {
-	log.Printf("hereeee11111")  ////////////////////////////////////////////////////////
 	for {
-		log.Printf("hereeee2000000")  ////////////////////////////////////////////////////////
-
 		select {
 		case client := <-h.register:
-			log.Printf("hereeee100000000000")  ////////////////////////////////////////////////////////
-
 			err := h.AddClientToHub(client)
 			if err != nil {
-				log.Printf("error adding client to hub:%v", err)
-				// c.Status(400)                ????????????????????????????????????????????????
+				log.Printf("Error adding client to hub: %v", err)
 				return
 			}
 		case client := <-h.unregister:
@@ -63,8 +68,7 @@ func (h *Hub) Run() {
 		case message := <-h.broadcast:
 			err := h.SendMessageToClients(message)
 			if err != nil {
-				log.Printf("error adding client to hub:%v", err)
-				// c.Status(400)                ????????????????????????????????????????????????
+				log.Printf("Error sending message to clients: %v", err)
 				return
 			}
 		}
@@ -72,8 +76,6 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) AddClientToHub(c *Client) error {
-	log.Printf("hereeee22222")  ////////////////////////////////////////////////////////
-
 	flag, err := db.Mysql.IsAChatContact(c.userID, c.chatID)
 	if err != nil {
 		return err
@@ -82,18 +84,15 @@ func (h *Hub) AddClientToHub(c *Client) error {
 		return errors.New("this ID is not a member of this chat")
 	}
 	h.clients[c.userID] = c
-	h.chatClients[c.chatID] = append(h.chatClients[c.chatID], c) //check!!!!!!!!!!!!!!!!!!!!!!!!
+	h.chatClients[c.chatID] = append(h.chatClients[c.chatID], c)
 	return nil
 }
 
 func (h *Hub) RemoveClient(c *Client) {
-	log.Printf("hereeee3333333")  ////////////////////////////////////////////////////////
-
 	delete(h.clients, c.userID)
-	//inja check beshe!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 	if userIDs, ok := h.chatClients[c.chatID]; ok {
-		for i, id := range userIDs {
-			if id == c {
+		for i, client := range userIDs {
+			if client == c {
 				h.chatClients[c.chatID] = append(userIDs[:i], userIDs[i+1:]...)
 				break
 			}
@@ -108,19 +107,14 @@ func (h *Hub) RemoveClient(c *Client) {
 }
 
 func (h *Hub) SendMessageToClients(message db.Message) error {
-	log.Printf("hereeee444444")  ////////////////////////////////////////////////////////
-
-	//chon tooye add client to hub yedor check kardam ke karbar ozve chat hast ya na, inja check nekardam
 	err := db.Mysql.SendMessage(message)
 	if err != nil {
 		return err
 	}
-	for key, value := range h.chatClients {
+	for key, clients := range h.chatClients {
 		if key == message.ChatID {
-			for _, v := range value {
-				log.Printf("i send message to :%v",value)  ////////////////////////////////////////////////////////
-
-				v.receive <- message
+			for _, client := range clients {
+				client.receive <- message
 			}
 		}
 	}
@@ -128,31 +122,28 @@ func (h *Hub) SendMessageToClients(message db.Message) error {
 }
 
 func ServeWs(hub *Hub, c *gin.Context) {
-	log.Printf("hereeee55555")  ////////////////////////////////////////////////////////
-	log.Printf("this is hub:%v",hub)
-
 	userID, err := GetUserID(c.GetHeader("Authorization"))
 	if err != nil {
-		log.Printf("error get user ID:%v", err)
+		log.Printf("Error getting user ID: %v", err)
 		c.Status(400)
 		return
 	}
 	intOfUserID, err := strconv.ParseUint(userID, 10, 64)
 	if err != nil {
-		log.Printf("error converting to int:%v", err)
+		log.Printf("Error converting user ID to int: %v", err)
 		c.Status(400)
 		return
 	}
 	chatID := c.Param("chatID")
 	intOfChatID, err := strconv.ParseUint(chatID, 10, 64)
 	if err != nil {
-		log.Printf("error converting to int:%v", err)
+		log.Printf("Error converting chat ID to int: %v", err)
 		c.Status(400)
 		return
 	}
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Printf("error upgrading connection to websocket:%v", err)
+		log.Printf("Error upgrading to websocket: %v", err)
 		c.Status(400)
 		return
 	}
@@ -164,33 +155,33 @@ func ServeWs(hub *Hub, c *gin.Context) {
 		send:    make(chan db.Message),
 		receive: make(chan db.Message),
 	}
-	// users[client.user.ID] = conn
 	client.hub.register <- client
 	go client.WritePump()
 	go client.ReadPump()
 }
 
 func (c *Client) ReadPump() {
-	log.Printf("hereeee66666")  ////////////////////////////////////////////////////////
-
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
+	c.conn.SetReadLimit(maxMessageSize)
+	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
 	for {
 		var message db.Message
 		err := c.conn.ReadJSON(&message)
 		if err != nil {
-			log.Printf("error reading message from websocket:%v", err)
-			// c.Status(400)     ?????????????????????????????????????????
-			return
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				log.Printf("Error: %v", err)
+			}
+			break
 		}
-
 		message.SenderID = c.userID
+		message.ChatID = c.chatID
 		messageID, err := generateID()
 		if err != nil {
-			log.Printf("error in generating ID:%v", err)
-			// c.Status(400)                ?????????????????????????????????????
+			log.Printf("Error generating message ID: %v", err)
 			return
 		}
 		message.ID = messageID
@@ -200,72 +191,24 @@ func (c *Client) ReadPump() {
 }
 
 func (c *Client) WritePump() {
-	log.Printf("hereeee77777")  ////////////////////////////////////////////////////////
-
+	ticker := time.NewTicker(pingPeriod)
 	defer func() {
+		ticker.Stop()
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
-	for{
-		message:=<-c.receive
-		err := c.conn.WriteJSON(message)
-		if err != nil {
-			log.Printf("error writing message to websocket: %v", err)
-			// c.Status(400)                ?????????????????????????????????????
-			return
+	for {
+		select {
+		case message := <-c.receive:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.conn.WriteJSON(message); err != nil {
+				return
+			}
+		case <-ticker.C:
+			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
+			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				return
+			}
 		}
 	}
 }
-
-// func (c *Client) ReadPump() {
-// 	defer func() {
-// 		c.hub.unregister <- c
-// 		c.conn.Close()
-// 	}()
-// 	c.conn.SetReadLimit(maxMessageSize)
-// 	c.conn.SetReadDeadline(time.Now().Add(pongWait))
-// 	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
-// 	for {
-// 		var message db.Message
-// 		err := c.conn.ReadJSON(&message)
-// 		if err != nil {
-// 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-// 				log.Printf("error: %v", err)
-// 			}
-// 			break
-// 		}
-
-// 		message.SenderID = c.userID
-// 		messageID, err := generateID()
-// 		if err != nil {
-// 			log.Printf("error in generating ID: %v", err)
-// 			return
-// 		}
-// 		message.ID = messageID
-// 		message.Time = time.Now()
-// 		c.hub.broadcast <- message
-// 	}
-// }
-
-// func (c *Client) WritePump() {
-// 	ticker := time.NewTicker(pingPeriod)
-// 	defer func() {
-// 		ticker.Stop()
-// 		c.hub.unregister <- c
-// 		c.conn.Close()
-// 	}()
-// 	for {
-// 		select {
-// 		case message := <-c.receive:
-// 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-// 			if err := c.conn.WriteJSON(message); err != nil {
-// 				return
-// 			}
-// 		case <-ticker.C:
-// 			c.conn.SetWriteDeadline(time.Now().Add(writeWait))
-// 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-// 				return
-// 			}
-// 		}
-// 	}
-// }
