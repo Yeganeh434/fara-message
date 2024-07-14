@@ -29,7 +29,6 @@ func (d *Database) NewChat(chatID uint64, chatName string, chatType int, users [
 			return err
 		}
 	}
-	//handle error!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	d.db.Create(&chat)
 	return nil
 }
@@ -82,7 +81,6 @@ func (d *Database) GetChatMembers(chatID uint64) ([]User, error) {
 	return members, nil
 }
 
-// if empty!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 func (d *Database) GetChatsList(userID string) ([]string, error) {
 	//get groups name
 	var chatsName []string

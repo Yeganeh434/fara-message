@@ -18,7 +18,6 @@ type DirectChatRequest struct {
 	User string `json:"user"`
 }
 
-// struct name!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 type NewMemberInfo struct {
 	ChatID      uint64 `json:"chatID"`
 	NewMemberID uint64 `json:"newMemberID"`

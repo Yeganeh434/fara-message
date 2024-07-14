@@ -111,12 +111,6 @@ func GetOTPHandler(c *gin.Context) {
 	}
 	defer resp.Body.Close()
 
-	// responseBody, err := ioutil.ReadAll(resp.Body)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Error reading response"})
-	// 	return
-	// }
-
 	//save otp in database
 	if !isItThePreviousOTP {
 		id, err := generateID()

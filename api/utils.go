@@ -23,17 +23,6 @@ func hash(input string) string {
 	return hashedString
 }
 
-// func generateID() string {
-// 	const charset = "0123456789"
-// 	rand.NewSource(10)
-// 	id := make([]byte, 5)
-// 	for idx := range id {
-// 		id[idx] = charset[rand.Intn(len(charset))]
-// 	}
-
-// 	return string(id)
-// }
-
 func GetUserIDFromToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return secretKey, nil

@@ -85,7 +85,6 @@ func (d *Database) DeleteContact(userID int, contactID int) error {
 
 func (d *Database) GetContact(userID int) ([]User, error) {
 	var contacts []User
-	// result := d.db.Table("contacts").Select("User.*").Joins("JOIN users ON contacts.contact_id=users.id").Where("contacts.user_id=?", userID).Find(&contacts)
 	result := d.db.Table("contacts").Select("users.*").Joins("JOIN users ON contacts.contact_id = users.ID").Where("contacts.user_id = ?", userID).Find(&contacts)
 	if result.Error != nil {
 		return nil, result.Error
